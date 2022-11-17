@@ -162,6 +162,18 @@ namespace Repository
                 return _flight;
             }
         }
+        private IHotelRepository _hotel;
+        public IHotelRepository Hotel
+        {
+            get
+            {
+                if (_hotel == null)
+                {
+                    _hotel = new HotelRepository(_repoContext);
+                }
+                return _hotel;
+            }
+        }
         public RepositoryWrapper(RepositoryContext repositoryContext)
         {
             _repoContext = repositoryContext;

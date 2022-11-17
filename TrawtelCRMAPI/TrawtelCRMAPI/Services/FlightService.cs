@@ -1,5 +1,9 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
+using Amazon.DynamoDBv2.Model;
+using Amazon.Runtime.Internal;
 using Amazon.S3;
+using Entities;
+using Entities.DataTransferObjects;
 using Entities.Models;
 using Newtonsoft.Json;
 using System.Collections.Generic;
@@ -12,6 +16,35 @@ namespace TrawtelCRMAPI.Services
         public FlightService(IAmazonS3 s3Client)
         {
             _amazonService = new AmazonService(s3Client);
+        }
+        public FlightRequestDTO ValidateFlightRequest(FlightRequestDTO flightRequestDTO)
+        {
+            if (flightRequestDTO == null)
+            {
+                flightRequestDTO.ErrorStatus = true;
+                flightRequestDTO.ErrorMessage = "Please check the payload";
+            }
+            else if (flightRequestDTO.flightJourneyRequest == null)
+            {
+                flightRequestDTO.ErrorStatus = true;
+                flightRequestDTO.ErrorMessage = "Please check the payload";
+            }
+            else if (flightRequestDTO.Adults == 0)
+            {
+                flightRequestDTO.ErrorStatus = true;
+                flightRequestDTO.ErrorMessage = "Please enter the adults";
+            }
+            return flightRequestDTO;
+        }
+        public FlightRequestDTO GetFlightRequestDetails(FlightRequestDTO flightRequestDTO)
+        {
+            flightRequestDTO = ValidateFlightRequest(flightRequestDTO);
+            if (flightRequestDTO.ErrorStatus)
+            {
+                return flightRequestDTO;
+            }
+            
+            return flightRequestDTO;
         }
         public List<CommonFlightDetails> CustomizeFlights(List<CommonFlightDetails> commonFlightDetailsList)
         {

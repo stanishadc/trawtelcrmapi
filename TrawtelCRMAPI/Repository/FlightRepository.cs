@@ -7,7 +7,7 @@ using static Entities.CommonEnums;
 
 namespace Repository
 {
-    public class FlightRepository : RepositoryBase<SupplierCode>, IFlightRepository
+    public class FlightRepository : RepositoryBase<FlightRequest>, IFlightRepository
     {
         RepositoryContext _repositoryContext;
         TripJackProxy _tripJackProxy;
@@ -16,15 +16,8 @@ namespace Repository
             _repositoryContext = repositoryContext;
             _tripJackProxy = new TripJackProxy();
         }
-        public CommonFlightsResponse SearchFlights(FlightRequestDetails flightRequest, Guid AgentId, List<AgentSuppliers>? supplierdetails)
+        public CommonFlightsResponse SearchFlights(FlightRequestDTO commonFlightRequest, Guid AgentId, List<AgentSuppliers>? supplierdetails)
         {
-            CommonFlightRequest commonFlightRequest = new CommonFlightRequest();
-            commonFlightRequest.Adults = flightRequest.NoOfAdults;
-            commonFlightRequest.Infants = flightRequest.NoOfInfants;
-            commonFlightRequest.Kids = flightRequest.NoOfKids;
-            commonFlightRequest.CabinClass = flightRequest.ClassType;
-            commonFlightRequest.JourneyType = flightRequest.JourneyType;
-            commonFlightRequest.flightJourneyRequest = flightRequest.FlightJourneyRequest;
             CommonFlightsResponse commonFlightsResponse = new CommonFlightsResponse();
             Parallel.ForEach(supplierdetails, AS =>
                 {
@@ -34,6 +27,32 @@ namespace Repository
                     }
                 });
             return commonFlightsResponse;
+        }        
+        public IEnumerable<FlightRequest> GetFlightRequestsByAgent(Guid AgentId)
+        {
+            return FindAll()
+                .OrderBy(ow => ow.CreatedDate)
+                .ToList();
+        }
+        public FlightRequest GetFlightRequestById(Guid FlightRequestId)
+        {
+            return FindByCondition(client => client.FlightRequestId.Equals(FlightRequestId)).FirstOrDefault();
+        }
+        public IEnumerable<FlightRequest> GetFlightRequestsByClient(Guid ClientId)
+        {
+            return FindByCondition(client => client.ClientId.Equals(ClientId)).ToList();
+        }
+        public void CreateFlightRequest(FlightRequest commonFlightRequest)
+        {
+            Create(commonFlightRequest);
+        }
+        public void UpdateFlightRequest(FlightRequest commonFlightRequest)
+        {
+            Update(commonFlightRequest);
+        }
+        public void DeleteFlightRequest(FlightRequest commonFlightRequest)
+        {
+            Delete(commonFlightRequest);
         }
     }
 }

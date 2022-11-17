@@ -21,6 +21,7 @@ namespace Contracts
         IBookingRepository Booking { get; }
         ITravelerRepository Traveler { get; }
         IFlightRepository Flight { get; }
+        IHotelRepository Hotel { get; }
         void Save();
     }
 }

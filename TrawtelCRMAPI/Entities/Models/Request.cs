@@ -14,7 +14,7 @@ namespace Entities.Models
         public DateTime TravelDate { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime UpdatedDate { get; set; }
-        public string? Status { get; set; }        
+        public string? Status { get; set; }
         public string? TravelRequest { get; set; }
     }
     public class TravelRequest
@@ -55,17 +55,7 @@ namespace Entities.Models
         public DateTime CheckinDate { get; set; }
         public DateTime CheckoutDate { get; set; }
     }    
-    public class RoomDetails
-    {
-        public Guid RoomDetailsId { get; set; }
-        public int Adults { get; set; }
-        public int[]? KidsAge { get; set; }
-        public string[]? GuestDetails { get; set; }
-        public string? RoomType { get; set; }
-        public string? BedType { get; set; }
-        public string? Breakfast { get; set; }
-        public bool? SmokingRoom { get; set; }
-    }
+    
     public class VisaRequestDetails
     {
         [Key]

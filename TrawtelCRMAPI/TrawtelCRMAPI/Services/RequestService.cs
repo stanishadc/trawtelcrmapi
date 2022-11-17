@@ -5,30 +5,24 @@ namespace TrawtelCRMAPI.Services
 {
     public class RequestService
     {
-        public FlightRequestDetails getFlightRequestDetails(RequestDTO flightRequest)
+        public FlightRequest getFlightRequestDetails(FlightRequest commonFlightRequest)
         {
-            FlightRequestDetails flightRequestDetails = new FlightRequestDetails();
-            if (flightRequest == null)
+            if (commonFlightRequest == null)
             {
-                flightRequestDetails.Error = "Please check the payload";
+                commonFlightRequest.ErrorStatus = true;
+                commonFlightRequest.ErrorMessage = "Please check the payload";
             }
-            else if (flightRequest.TravelRequest == null)
+            else if (commonFlightRequest.flightJourneyRequest == null)
             {
-                flightRequestDetails.Error = "Please check the payload";
+                commonFlightRequest.ErrorStatus = true;
+                commonFlightRequest.ErrorMessage = "Please check the payload";
             }
-            else if (flightRequest.TravelRequest.FlightRequestDetails == null)
+            else if (commonFlightRequest.Adults == 0)
             {
-                flightRequestDetails.Error = "Please check the payload";
+                commonFlightRequest.ErrorStatus = true;
+                commonFlightRequest.ErrorMessage = "Please enter the adults";
             }
-            else if (flightRequest.TravelRequest.FlightRequestDetails.NoOfAdults == 0)
-            {
-                flightRequestDetails.Error= "Please enter the adults";
-            }
-            else
-            {
-                flightRequestDetails = flightRequest.TravelRequest.FlightRequestDetails;
-            }
-            return flightRequestDetails;
+            return commonFlightRequest;
         }
     }
 }

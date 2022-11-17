@@ -10,14 +10,14 @@ namespace TripJack
 {
     public interface ITripJackProxy
     {
-        TripJackSearchResponse searchAllRequest(string RequestData, CommonFlightRequest commonFlightRequest);
-        TripJackReviewResponse reviewRequest(string RequestData, CommonFlightRequest commonFlightRequest);
-        TripJackSeatMapResponse seatMapRequest(string RequestData, CommonFlightRequest commonFlightRequest);
-        TripJackBookingDetailsResponse bookingDetailsRequest(string RequestData, CommonFlightRequest commonFlightRequest);
-        TripJackBookingDetailsResponse confirmHoldBookingRequest(string RequestData, CommonFlightRequest commonFlightRequest);
-        TripJackConfirmFareTicketResponse confirmFareTicketRequest(string RequestData, CommonFlightRequest commonFlightRequest);
-        TripJackHoldBookResponse holdBookingRequest(string RequestData, CommonFlightRequest commonFlightRequest);
-        TripJackBookResponse instantBookingRequest(string RequestData, CommonFlightRequest commonFlightRequest);
+        TripJackSearchResponse searchAllRequest(string RequestData, FlightRequest commonFlightRequest);
+        TripJackReviewResponse reviewRequest(string RequestData, FlightRequest commonFlightRequest);
+        TripJackSeatMapResponse seatMapRequest(string RequestData, FlightRequest commonFlightRequest);
+        TripJackBookingDetailsResponse bookingDetailsRequest(string RequestData, FlightRequest commonFlightRequest);
+        TripJackBookingDetailsResponse confirmHoldBookingRequest(string RequestData, FlightRequest commonFlightRequest);
+        TripJackConfirmFareTicketResponse confirmFareTicketRequest(string RequestData, FlightRequest commonFlightRequest);
+        TripJackHoldBookResponse holdBookingRequest(string RequestData, FlightRequest commonFlightRequest);
+        TripJackBookResponse instantBookingRequest(string RequestData, FlightRequest commonFlightRequest);
     }
     public class TripJackProxy
     {
@@ -218,7 +218,7 @@ namespace TripJack
         #endregion
 
         #region Create Search Request with Markup
-        public CommonFlightsResponse CreateSearchRequest(CommonFlightRequest commonFlightRequest, AgentSuppliers agentSuppliers)
+        public CommonFlightsResponse CreateSearchRequest(FlightRequestDTO commonFlightRequest, AgentSuppliers agentSuppliers)
         {
             CommonFlightsResponse _objResponse = new CommonFlightsResponse();
             try
@@ -236,7 +236,7 @@ namespace TripJack
             }
             return _objResponse;
         }
-        private TripJackSearchRequest GetTripJackSearchMarkup(CommonFlightRequest commonFlightRequest)
+        private TripJackSearchRequest GetTripJackSearchMarkup(FlightRequestDTO commonFlightRequest)
         {
             TripJackSearchRequest tripJackSearchRequest = new TripJackSearchRequest();
             tripJackSearchRequest.searchQuery = new SearchQuery();
@@ -291,7 +291,7 @@ namespace TripJack
         }
         #endregion
         #region Read All Flights Response
-        private CommonFlightsResponse ReadFlightDetails(TripJackSearchResponse tripJackSearchResponse, CommonFlightRequest commonFlightRequest, AgentSuppliers agentSupplier)
+        private CommonFlightsResponse ReadFlightDetails(TripJackSearchResponse tripJackSearchResponse, FlightRequestDTO commonFlightRequest, AgentSuppliers agentSupplier)
         {
             CommonFlightsResponse _commonFlightsResponse = new CommonFlightsResponse();
             if (tripJackSearchResponse.searchResult != null)

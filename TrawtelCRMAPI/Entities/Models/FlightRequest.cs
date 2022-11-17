@@ -1,20 +1,56 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Entities.Models
 {
-    public class CommonFlightRequest
+    [Table("FlightRequests")]
+    public class FlightRequest
     {
-        public List<FlightJourneyRequest>? flightJourneyRequest { get; set; }
+        [Key]
+        public Guid FlightRequestId { get; set; }
+        public Guid AgentId { get; set; }
+        public Guid ClientId { get; set; }
         public string? JourneyType { get; set; }
         public int Adults { get; set; }
         public int Kids { get; set; }
         public int Infants { get; set; }
+        public string? flightJourneyRequest { get; set; }
+        public string? Passengers { get; set; }
+        public string? CabinClass { get; set; }        
+        public DateTime TravelDate { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public string? Status { get; set; }
+        public DateTime UpdatedDate { get; set; }
+        [NotMapped]
+        public bool ErrorStatus { get; set; }
+        [NotMapped]
+        public string? ErrorMessage { get; set; }
+    }
+    public class FlightRequestRoot
+    {
+        public List<FlightJourneyRequest>? flightJourneyRequest { get; set; }
+    }
+    public class FlightRequestDTO
+    {
+        [Key]
+        public Guid FlightRequestId { get; set; }
+        public Guid AgentId { get; set; }
+        public Guid ClientId { get; set; }
+        public string? JourneyType { get; set; }
+        public int Adults { get; set; }
+        public int Kids { get; set; }
+        public int Infants { get; set; }
+        public List<FlightJourneyRequest>? flightJourneyRequest { get; set; }
+        public List<Traveler>? Passengers { get; set; }
         public string? CabinClass { get; set; }
-        public Guid AgentId { get; set; }        
+        public DateTime TravelDate { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public string? Status { get; set; }
+        public DateTime UpdatedDate { get; set; }
+        [NotMapped]
+        public bool ErrorStatus { get; set; }
+        [NotMapped]
+        public string? ErrorMessage { get; set; }
     }
     public class AgentSuppliers
     {
@@ -27,7 +63,7 @@ namespace Entities.Models
     }
     public class CommonFlightsResponse
     {
-        public CommonFlightRequest? commonFlightRequest { get; set; }
+        public FlightRequestDTO? commonFlightRequest { get; set; }
         public List<CommonFlightDetails>? commonFlightDetails { get; set; }
         public bool? status { get; set; }
         public string? ErrorMessage{get;set;}

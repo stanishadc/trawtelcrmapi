@@ -1,14 +1,15 @@
 ﻿using Entities.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Contracts
 {
     public interface IFlightRepository
     {
-        CommonFlightsResponse SearchFlights(FlightRequestDetails flightRequest, Guid AgentId, List<AgentSuppliers>? supplierdetails);
+        CommonFlightsResponse SearchFlights(FlightRequestDTO commonFlightRequest, Guid AgentId, List<AgentSuppliers>? supplierdetails);
+        void CreateFlightRequest(FlightRequest commonFlightRequest);
+        void UpdateFlightRequest(FlightRequest commonFlightRequest);
+        void DeleteFlightRequest(FlightRequest commonFlightRequest);
+        IEnumerable<FlightRequest> GetFlightRequestsByAgent(Guid AgentId);
+        FlightRequest GetFlightRequestById(Guid RequestId);
+        IEnumerable<FlightRequest> GetFlightRequestsByClient(Guid ClientId);
     }
 }
