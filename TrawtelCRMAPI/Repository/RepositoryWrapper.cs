@@ -174,6 +174,42 @@ namespace Repository
                 return _hotel;
             }
         }
+        private IAirportRepository _airport;
+        public IAirportRepository Airport
+        {
+            get
+            {
+                if (_airport == null)
+                {
+                    _airport = new AirportRepository();
+                }
+                return _airport;
+            }
+        }
+        private ICityRepository _city;
+        public ICityRepository City
+        {
+            get
+            {
+                if (_city == null)
+                {
+                    _city = new CityRepository();
+                }
+                return _city;
+            }
+        }
+        private ICountryRepository _country;
+        public ICountryRepository Country
+        {
+            get
+            {
+                if (_country == null)
+                {
+                    _country = new CountryRepository();
+                }
+                return _country;
+            }
+        }
         public RepositoryWrapper(RepositoryContext repositoryContext)
         {
             _repoContext = repositoryContext;

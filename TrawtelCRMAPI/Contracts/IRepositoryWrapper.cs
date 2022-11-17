@@ -22,6 +22,9 @@ namespace Contracts
         ITravelerRepository Traveler { get; }
         IFlightRepository Flight { get; }
         IHotelRepository Hotel { get; }
+        IAirportRepository Airport { get; }
+        ICityRepository City { get; }
+        ICountryRepository Country{get;}
         void Save();
     }
 }

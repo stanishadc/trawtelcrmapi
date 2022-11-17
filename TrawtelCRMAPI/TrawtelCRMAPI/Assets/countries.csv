@@ -1,0 +1,245 @@
+id|name|code
+1|Canada|CA
+2|Greece|GR
+3|Slovenia|SI
+4|Saint Lucia|LC
+5|United States|US
+6|Czech Republic|CZ
+7|Germany|DE
+8|United Kingdom|UK
+9|Albania|AL
+10|Andorra|AD
+11|Denmark|DK
+12|Antigua And Barbuda|AG
+13|Argentina|AR
+14|Austria|AT
+15|Armenia|AM
+16|Aruba|AW
+17|Australia|AU
+18|Dominican Republic|DO
+19|Ecuador|EC
+20|Egypt|EG
+21|Cameroon|CM
+22|El Salvador|SV
+23|Estonia|EE
+24|Fiji|FJ
+25|Finland|FI
+26|Azerbaijan|AZ
+27|Bahamas|BS
+28|Bahrain|BH
+29|Barbados|BB
+30|Belarus|BY
+31|Belgium|BE
+32|Bolivia|BO
+33|France|FR
+34|Brazil|BR
+35|Bulgaria|BG
+36|Cambodia|KH
+37|Cayman Islands|KY
+38|New Zealand|NZ
+39|Chile|CL
+40|China|CN
+41|Indonesia|ID
+42|Colombia|CO
+43|Costa Rica|CR
+44|Croatia|HR
+45|Cyprus|CY
+46|Georgia|GE
+47|Gibraltar|GI
+48|Grenada|GD
+49|Guadeloupe|GP
+50|Guatemala|GT
+51|Honduras|HN
+52|Hong Kong|HK
+53|Hungary|HU
+54|Iceland|IS
+55|India|IN
+56|Ireland|IE
+57|Israel|IL
+58|Italy|IT
+59|Jamaica|JM
+60|Japan|JP
+61|Jordan|JO
+62|South Korea|KR
+63|Kuwait|KW
+64|Latvia|LV
+65|Liechtenstein|LI
+66|Lithuania|LT
+67|Luxembourg|LU
+68|Macedonia|MK
+69|Malaysia|MY
+70|Malta|MT
+71|Mexico|MX
+72|Moldova|MD
+73|Monaco|MC
+74|Morocco|MA
+75|Mozambique|MZ
+76|Netherlands|NL
+77|Norway|NO
+78|Netherlands Antilles|AN
+79|Nicaragua|NI
+80|Oman|OM
+81|Panama|PA
+82|Paraguay|PY
+83|Peru|PE
+84|Philippines|PH
+85|Poland|PL
+86|Portugal|PT
+87|Puerto Rico|PR
+88|Qatar|QA
+89|Romania|RO
+90|Russia|RU
+91|San Marino|SM
+92|Serbia|RS
+93|Singapore|SG
+94|Slovakia|SK
+95|South Africa|ZA
+96|Spain|ES
+97|Sri Lanka|LK
+98|Sweden|SE
+99|Switzerland|CH
+100|Tanzania|TZ
+101|Taiwan|TW
+102|Thailand|TH
+103|Tunisia|TN
+104|Turkey|TR
+105|Turks And Caicos Islands|TC
+106|Ukraine|UA
+107|United Arab Emirates|AE
+108|Uruguay|UY
+109|US Virgin Islands|VI
+110|Uzbekistan|UZ
+111|Vanuatu|VU
+112|Venezuela|VE
+113|Vietnam|VN
+114|Bosnia And Herzegovina|BA
+115|Brunei Darussalam|BN
+116|Laos|LA
+117|Nepal|NP
+118|Ghana|GH
+119|Saudi Arabia|SA
+120|Trinidad And Tobago|TT
+121|Yemen|YE
+122|Djibouti|DJ
+123|Macau|MO
+124|Benin|BJ
+125|Swaziland|SZ
+126|Cuba|CU
+127|Myanmar|MM
+128|Martinique|MQ
+129|Maldives|MV
+130|Namibia|NA
+131|Suriname|SR
+132|Anguilla|AI
+133|Saint Kitts And Nevis|KN
+134|Montenegro|ME
+135|Belize|BZ
+136|Eritrea|ER
+137|Kazakhstan|KZ
+138|Kenya|KE
+139|Lebanon|LB
+140|Pakistan|PK
+141|Papua New Guinea|PG
+142|French Polynesia|PF
+143|Zambia|ZM
+144|Algeria|DZ
+145|Zimbabwe|ZW
+146|Bermuda|BM
+147|Botswana|BW
+148|Burkina Faso|BF
+149|Uganda|UG
+150|Cape Verde|CV
+151|Syrian Arab Republic|SY
+152|New Caledonia|NC
+153|Palau|PW
+154|Reunion|RE
+155|Mauritius|MU
+156|Mali|ML
+157|Malawi|MW
+158|Madagascar|MG
+159|Libyan Arab Jamahiriya|LY
+160|Iran|IR
+161|Gambia|GM
+162|Saint Martin|MF
+163|Senegal|SN
+164|Seychelles|SC
+165|Angola|AO
+166|British Virgin Islands|VG
+167|Saint Vincent And The Grenadines|VC
+168|Equatorial Guinea|GQ
+169|Gabon|GA
+170|Bangladesh|BD
+171|Ethiopia|ET
+172|Guam|GU
+173|Nigeria|NG
+174|Dominica|DM
+175|Faroe Islands|FO
+176|Rwanda|RW
+177|Burundi|BI
+178|Cook Islands|CK
+179|Kyrgyzstan|KG
+180|Tajikistan|TJ
+181|Greenland|GL
+182|Haiti|HT
+183|Iraq|IQ
+184|Liberia|LR
+185|Palestinian Territory|PS
+186|Micronesia|FM
+187|Sudan|SD
+188|Northern Mariana Islands|MP
+189|Sao Tome And Principe|ST
+190|Saint Barthelemy|BL
+191|Mauritania|MR
+192|Guinea|GN
+193|Guinea-Bissau|GW
+194|French Guiana|GF
+195|Samoa|WS
+196|Tonga|TO
+197|Afghanistan|AF
+198|Guyana|GY
+199|American Samoa|AS
+200|Bhutan|BT
+201|Lesotho|LS
+202|Mongolia|MN
+203|Norfolk Island|NF
+204|Svalbard And Jan Mayen|SJ
+205|Togo|TG
+206|Turkmenistan|TM
+207|Comoros|KM
+208|Jersey|JE
+210|Kiribati|KI
+211|Ivory Coast|CI
+212|Marshall Islands|MH
+213|Solomon Islands|SB
+214|Democratic Republic of the Congo|CD
+215|Central African Republic|CF
+216|Chad|TD
+217|Republic of the Congo|CG
+218|Mayotte|YT
+219|Montserrat|MS
+220|Nauru|NR
+221|Niger|NE
+222|Sierra Leone|SL
+223|Somalia|SO
+224|Tuvalu|TV
+225|Niue|NU
+226|Bouvet Island|BV
+227|British Indian Ocean Territory|IO
+228|Christmas Island|CX
+229|Cocos Islands|CC
+230|Falkland Islands|FK
+231|French Southern and Antarctic Territories|TF
+232|Heard and McDonald Islands|HM
+233|North Korea|KP
+234|Pitcairn Island|PN
+235|St. Pierre and Miquelon|PM
+236|St. Helena|SH
+237|Tokelau|TK
+238|Wallis and Futuna|WF
+239|Timor Leste|TL
+240|Bonaire, Sint Eustatius and Saba|BQ
+241|Curacao|CW
+242|Sint Maarten|SX
+243|South Sudan|SS
+244|US Minor Outlying Islands|UM
+245|Vatican City|VA
