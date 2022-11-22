@@ -174,6 +174,18 @@ namespace Repository
                 return _hotel;
             }
         }
+        private IVisaRequestRepository _visaRequest;
+        public IVisaRequestRepository VisaRequest
+        {
+            get
+            {
+                if (_visaRequest == null)
+                {
+                    _visaRequest = new VisaRequestRepository(_repoContext);
+                }
+                return _visaRequest;
+            }
+        }
         private IAirportRepository _airport;
         public IAirportRepository Airport
         {

@@ -22,5 +22,6 @@ namespace Entities
         public DbSet<Traveler>? Traveler { get; set; }
         public DbSet<FlightRequest>? FlightRequests { get; set; }
         public DbSet<HotelRequest>? HotelRequests { get; set; }
+        public DbSet<VisaRequest>? VisaRequests { get; set; }
     }
 }

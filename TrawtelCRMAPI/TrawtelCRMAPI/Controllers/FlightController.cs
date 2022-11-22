@@ -1,7 +1,9 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
 using Amazon.S3;
+using AutoMapper;
 using Contracts;
 using Entities;
+using Entities.Common;
 using Entities.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -17,12 +19,16 @@ namespace TrawtelCRMAPI.Controllers
         private IRepositoryWrapper _repository;
         FlightService _flightService;
         private readonly IDynamoDBContext _context;
-        public FlightController(ILoggerManager logger, IRepositoryWrapper repository, IAmazonS3 s3Client, IDynamoDBContext context)
+        private IMapper _mapper;
+        private readonly IUriService uriService;
+        public FlightController(ILoggerManager logger, IRepositoryWrapper repository, IMapper mapper, IAmazonS3 s3Client, IDynamoDBContext context, IUriService uriService)
         {
             _logger = logger;
             _repository = repository;
-            _flightService = new FlightService(s3Client);
+            _flightService = new FlightService(s3Client, repository);
             _context = context;
+            _mapper = mapper;
+            this.uriService = uriService;
         }
         [Route("Search")]
         [HttpPost]
@@ -31,7 +37,7 @@ namespace TrawtelCRMAPI.Controllers
             APIResponse _objResponse = new APIResponse();
             try
             {
-                commonFlightRequest = _flightService.ValidateFlightRequest(commonFlightRequest);
+                commonFlightRequest = _flightService.GetFlightRequestDetails(commonFlightRequest);
                 if (!(bool)commonFlightRequest.ErrorStatus)
                 {
                     var supplierdetails = _repository.SupplierCode.GetDefaultSupplierByAgentId(commonFlightRequest.AgentId, CommonEnums.TravelType.Flight.ToString());
@@ -85,42 +91,27 @@ namespace TrawtelCRMAPI.Controllers
                 return _objResponse;
             }
         }
-        
+
         [HttpPost]
         public IActionResult CreateFlightRequest([FromBody] FlightRequestDTO commonFlightRequest)
         {
             try
             {
-                commonFlightRequest = _flightService.ValidateFlightRequest(commonFlightRequest);
+                commonFlightRequest = _flightService.GetFlightRequestDetails(commonFlightRequest);
                 if (commonFlightRequest.ErrorStatus)
                 {
                     _logger.LogError($"Something went wrong inside CreateOwner action: {commonFlightRequest.ErrorMessage}");
                     return StatusCode(500, commonFlightRequest.ErrorMessage);
                 }
-                FlightRequest flightRequest = new FlightRequest();
-                flightRequest.FlightRequestId = Guid.NewGuid();
-                flightRequest.AgentId = commonFlightRequest.AgentId;
-                flightRequest.ClientId = commonFlightRequest.ClientId;
-                flightRequest.Adults = commonFlightRequest.Adults;
-                flightRequest.CabinClass = commonFlightRequest.CabinClass;
-                flightRequest.Infants = commonFlightRequest.Infants;
-                flightRequest.JourneyType = commonFlightRequest.JourneyType;
-                flightRequest.Kids = commonFlightRequest.Kids;
-                flightRequest.Status = CommonEnums.Status.New.ToString();
-                flightRequest.CreatedDate = DateTime.UtcNow;
-                flightRequest.UpdatedDate = DateTime.UtcNow;
-                if (commonFlightRequest.flightJourneyRequest != null)
+                var response = _flightService.SaveFlightRequest(commonFlightRequest, "Save");
+                if (response.Status)
                 {
-                    if (commonFlightRequest.flightJourneyRequest.Count > 0)
-                    {
-                        flightRequest.TravelDate = commonFlightRequest.flightJourneyRequest[0].DepartureDate;
-                    }
+                    return StatusCode(200, "Flight Request Created");
                 }
-                flightRequest.flightJourneyRequest = JsonConvert.SerializeObject(new { commonFlightRequest.flightJourneyRequest });
-
-                _repository.Flight.CreateFlightRequest(flightRequest);
-                _repository.Save();
-                return NoContent();
+                else
+                {
+                    return StatusCode(400, response.ErrorMessage);
+                }
             }
             catch (Exception ex)
             {
@@ -128,13 +119,12 @@ namespace TrawtelCRMAPI.Controllers
                 return StatusCode(500, commonFlightRequest.ErrorMessage);
             }
         }
-
         [HttpPut("{id}")]
         public IActionResult UpdateFlightRequest(Guid id, [FromBody] FlightRequestDTO commonFlightRequest)
         {
             try
             {
-                commonFlightRequest = _flightService.ValidateFlightRequest(commonFlightRequest);
+                commonFlightRequest = _flightService.GetFlightRequestDetails(commonFlightRequest);
                 if (commonFlightRequest.ErrorStatus)
                 {
                     _logger.LogError($"Something went wrong inside CreateOwner action: {commonFlightRequest.ErrorMessage}");
@@ -146,30 +136,15 @@ namespace TrawtelCRMAPI.Controllers
                     _logger.LogError($"Flight with id: {id}, hasn't been found in db.");
                     return NotFound();
                 }
-                FlightRequest flightRequest = new FlightRequest();
-                flightRequest.FlightRequestId = id;
-                flightRequest.AgentId = commonFlightRequest.AgentId;
-                flightRequest.ClientId = commonFlightRequest.ClientId;
-                flightRequest.Adults = commonFlightRequest.Adults;
-                flightRequest.CabinClass = commonFlightRequest.CabinClass;
-                flightRequest.Infants = commonFlightRequest.Infants;
-                flightRequest.JourneyType = commonFlightRequest.JourneyType;
-                flightRequest.Kids = commonFlightRequest.Kids;
-                flightRequest.Status = CommonEnums.Status.Replied.ToString();
-                flightRequest.CreatedDate = FlightEntity.CreatedDate;
-                flightRequest.UpdatedDate = DateTime.UtcNow;
-                if (commonFlightRequest.flightJourneyRequest != null)
+                var response = _flightService.SaveFlightRequest(commonFlightRequest, "Save");
+                if (response.Status)
                 {
-                    if (commonFlightRequest.flightJourneyRequest.Count > 0)
-                    {
-                        flightRequest.TravelDate = commonFlightRequest.flightJourneyRequest[0].DepartureDate;
-                    }
+                    return StatusCode(200, "Flight Request Updated");
                 }
-                flightRequest.flightJourneyRequest = JsonConvert.SerializeObject(new { commonFlightRequest.flightJourneyRequest });
-
-                _repository.Flight.UpdateFlightRequest(flightRequest);
-                _repository.Save();
-                return NoContent();
+                else
+                {
+                    return StatusCode(400, response.ErrorMessage);
+                }
             }
             catch (Exception ex)
             {
@@ -192,8 +167,8 @@ namespace TrawtelCRMAPI.Controllers
                 else
                 {
                     _logger.LogInfo($"Returned flight with id: {RequestId}");
-                    var ownerResult = getRequestDTO(flightRequest);
-                    return Ok(ownerResult);
+                    var ownerResult = _flightService.getFlightRequestDTO(flightRequest);
+                    return Ok(new Response<FlightRequestDTO>(ownerResult));
                 }
             }
             catch (Exception ex)
@@ -204,11 +179,11 @@ namespace TrawtelCRMAPI.Controllers
         }
 
         [HttpGet("GetFlightRequestsByAgent/{AgentId}")]
-        public IActionResult GetFlightRequestsByAgent(Guid AgentId)
+        public IActionResult GetFlightRequestsByAgent(Guid AgentId, [FromQuery] PaginationFilter filter)
         {
             try
             {
-                var flightRequest = _repository.Flight.GetFlightRequestsByAgent(AgentId);
+                var flightRequest = _repository.Flight.GetFlightRequestsByAgent(AgentId);                
                 List<FlightRequestDTO> listRequests = new List<FlightRequestDTO>();
                 if (flightRequest is null)
                 {
@@ -217,12 +192,13 @@ namespace TrawtelCRMAPI.Controllers
                 }
                 else
                 {
-                    _logger.LogInfo($"Returned Agent with id: {AgentId}");                    
+                    _logger.LogInfo($"Returned Agent with id: {AgentId}");
                     foreach (var request in flightRequest)
                     {
-                        listRequests.Add(getRequestDTO(request));
+                        listRequests.Add(_flightService.getFlightRequestDTO(request));
                     }
-                    return Ok(listRequests);
+                    var pagedResponse = _flightService.GetPagination(listRequests, filter, Request.Path.Value, uriService);
+                    return Ok(pagedResponse);
                 }
             }
             catch (Exception ex)
@@ -233,7 +209,7 @@ namespace TrawtelCRMAPI.Controllers
         }
 
         [HttpGet("GetFlightRequestsByClient/{ClientId}")]
-        public IActionResult GetFlightRequestsByClient(Guid ClientId)
+        public IActionResult GetFlightRequestsByClient(Guid ClientId, [FromQuery] PaginationFilter filter)
         {
             try
             {
@@ -249,9 +225,10 @@ namespace TrawtelCRMAPI.Controllers
                     _logger.LogInfo($"Returned Agent with id: {ClientId}");
                     foreach (var request in flightRequest)
                     {
-                        listRequests.Add(getRequestDTO(request));
+                        listRequests.Add(_flightService.getFlightRequestDTO(request));
                     }
-                    return Ok(listRequests);
+                    var pagedResponse = _flightService.GetPagination(listRequests, filter, Request.Path.Value, uriService);
+                    return Ok(pagedResponse);
                 }
             }
             catch (Exception ex)
@@ -259,28 +236,6 @@ namespace TrawtelCRMAPI.Controllers
                 _logger.LogError($"Something went wrong inside GetAgentById action: {ex.Message}");
                 return StatusCode(500, "Internal server error");
             }
-        }
-
-        private FlightRequestDTO getRequestDTO(FlightRequest flightRequest)
-        {
-            FlightRequestDTO flightRequestDTO = new FlightRequestDTO();
-            flightRequestDTO.FlightRequestId = flightRequest.FlightRequestId;
-            flightRequestDTO.AgentId = flightRequest.AgentId;
-            flightRequestDTO.ClientId = flightRequest.ClientId;
-            flightRequestDTO.Adults = flightRequest.Adults;
-            flightRequestDTO.CabinClass = flightRequest.CabinClass;
-            flightRequestDTO.Infants = flightRequest.Infants;
-            flightRequestDTO.JourneyType = flightRequest.JourneyType;
-            flightRequestDTO.Kids = flightRequest.Kids;
-            flightRequestDTO.Status = flightRequest.Status;
-            flightRequestDTO.CreatedDate = flightRequest.CreatedDate;
-            flightRequestDTO.UpdatedDate = flightRequest.UpdatedDate;
-            flightRequestDTO.TravelDate = flightRequest.TravelDate;
-            
-                var trmodel = JsonConvert.DeserializeObject<FlightRequestRoot>(flightRequest.flightJourneyRequest);
-            flightRequestDTO.flightJourneyRequest = trmodel?.flightJourneyRequest;
-
-            return flightRequestDTO;
         }
     }
 }

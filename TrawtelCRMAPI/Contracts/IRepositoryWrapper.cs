@@ -25,6 +25,7 @@ namespace Contracts
         IAirportRepository Airport { get; }
         ICityRepository City { get; }
         ICountryRepository Country{get;}
+        IVisaRequestRepository VisaRequest { get; }
         void Save();
     }
 }

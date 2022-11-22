@@ -16,6 +16,7 @@ namespace Contracts
         void CreateTraveler(Traveler traveler);
         void UpdateTraveler(Traveler traveler);
         void DeleteTraveler(Traveler traveler);
+        Guid CheckTravelerExists(Traveler traveler);
     }
 }
 

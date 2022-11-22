@@ -30,9 +30,7 @@ namespace Repository
         }        
         public IEnumerable<FlightRequest> GetFlightRequestsByAgent(Guid AgentId)
         {
-            return FindAll()
-                .OrderBy(ow => ow.CreatedDate)
-                .ToList();
+            return FindByCondition(client => client.AgentId.Equals(AgentId)).ToList();
         }
         public FlightRequest GetFlightRequestById(Guid FlightRequestId)
         {

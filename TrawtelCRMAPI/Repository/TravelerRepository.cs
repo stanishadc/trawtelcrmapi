@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using System.Runtime.ExceptionServices;
 
 namespace Repository
 {
@@ -45,6 +47,19 @@ namespace Repository
         public void DeleteTraveler(Traveler traveler)
         {
             Delete(traveler);
+        }
+        public Guid CheckTravelerExists(Traveler traveler)
+        {
+            var traveller = FindByCondition(client => client.FirstName.Equals(traveler.FirstName) && client.LastName.Equals(traveler.LastName) && client.DateOfBirth.Equals(traveler.DateOfBirth))
+                .FirstOrDefault();
+            if (traveller == null)
+            {
+                return default(Guid);
+            }
+            else
+            {
+                return traveller.TravelerId;
+            }
         }
     }
 }

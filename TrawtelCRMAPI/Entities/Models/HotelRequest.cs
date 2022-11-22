@@ -14,7 +14,6 @@ namespace Entities.Models
         public DateTime CheckOut { get; set; }
         public string? Location { get; set; }
         public string? RoomDetails { get; set; }
-        public string? Guests { get; set; }
         public string? HotelResponse { get; set; }
         public string? Status { get; set; }
         public DateTime CreatedDate { get; set; }        
@@ -34,7 +33,6 @@ namespace Entities.Models
         public DateTime CheckOut { get; set; }
         public Location? Location { get; set; }
         public List<RoomDetails>? RoomDetails { get; set; }
-        public string? Guests { get; set; }
         public string? HotelResponse { get; set; }
         public string? Status { get; set; }
         public DateTime CreatedDate { get; set; }
@@ -44,7 +42,7 @@ namespace Entities.Models
     }
     public class HotelRequestRoot
     {
-        public List<RoomDetails>? roomDetails { get; set; }
+        public List<RoomGuestDetails>? roomDetails { get; set; }
         public Location? location { get; set; }
     }
     public class RoomDetails
@@ -52,10 +50,13 @@ namespace Entities.Models
         public Guid RoomDetailsId { get; set; }
         public int Adults { get; set; }
         public int[]? KidsAge { get; set; }
+        public List<Traveler>? GuestDetails { get; set; }
+    }
+    public class RoomGuestDetails
+    {
+        public Guid RoomDetailsId { get; set; }
+        public int Adults { get; set; }
+        public int[]? KidsAge { get; set; }
         public string[]? GuestDetails { get; set; }
-        public string? RoomType { get; set; }
-        public string? BedType { get; set; }
-        public string? Breakfast { get; set; }
-        public bool? SmokingRoom { get; set; }
     }
 }

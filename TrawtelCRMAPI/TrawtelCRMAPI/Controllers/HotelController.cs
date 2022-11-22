@@ -1,10 +1,7 @@
-﻿using Amazon.DynamoDBv2.DataModel;
-using Amazon.S3;
-using Contracts;
-using Entities;
+﻿using Contracts;
+using Entities.Common;
 using Entities.Models;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using TrawtelCRMAPI.Services;
 
 namespace TrawtelCRMAPI.Controllers
@@ -16,40 +13,34 @@ namespace TrawtelCRMAPI.Controllers
         private ILoggerManager _logger;
         private IRepositoryWrapper _repository;
         HotelService _HotelService;
-        private readonly IDynamoDBContext _context;
-        public HotelController(ILoggerManager logger, IRepositoryWrapper repository, IAmazonS3 s3Client, IDynamoDBContext context)
+        private readonly IUriService uriService;
+        public HotelController(ILoggerManager logger, IRepositoryWrapper repository, IUriService uriService)
         {
             _logger = logger;
             _repository = repository;
-            _HotelService = new HotelService(s3Client);
-            _context = context;
+            _HotelService = new HotelService(repository);
+            this.uriService = uriService;
         }      
         [HttpPost]
         public IActionResult CreateHotelRequest([FromBody] HotelRequestDTO commonHotelRequest)
         {
             try
             {
-                commonHotelRequest = _HotelService.ValidateHotelRequest(commonHotelRequest);
+                commonHotelRequest = _HotelService.GetHotelRequestDetails(commonHotelRequest);
                 if (commonHotelRequest.ErrorStatus)
                 {
                     _logger.LogError($"Something went wrong inside CreateOwner action: {commonHotelRequest.ErrorMessage}");
                     return StatusCode(500, commonHotelRequest.ErrorMessage);
                 }
-                HotelRequest HotelRequest = new HotelRequest();
-                HotelRequest.HotelRequestId = Guid.NewGuid();
-                HotelRequest.AgentId = commonHotelRequest.AgentId;
-                HotelRequest.ClientId = commonHotelRequest.ClientId;
-                HotelRequest.CheckIn = commonHotelRequest.CheckIn;
-                HotelRequest.CheckOut = commonHotelRequest.CheckOut;
-                HotelRequest.Status = CommonEnums.Status.New.ToString();
-                HotelRequest.CreatedDate = DateTime.UtcNow;
-                HotelRequest.UpdatedDate = DateTime.UtcNow;
-                HotelRequest.RoomDetails = JsonConvert.SerializeObject(new { commonHotelRequest.RoomDetails });
-                HotelRequest.Location = JsonConvert.SerializeObject(new { commonHotelRequest.Location });
-
-                _repository.Hotel.CreateHotelRequest(HotelRequest);
-                _repository.Save();
-                return NoContent();
+                var response = _HotelService.SaveHotelRequest(commonHotelRequest,"Save");
+                if(response.Status)
+                {
+                    return StatusCode(200, "Hotel Request Created");
+                }
+                else
+                {
+                    return StatusCode(400, response.ErrorMessage);
+                }
             }
             catch (Exception ex)
             {
@@ -57,13 +48,12 @@ namespace TrawtelCRMAPI.Controllers
                 return StatusCode(500, commonHotelRequest.ErrorMessage);
             }
         }
-
         [HttpPut("{id}")]
         public IActionResult UpdateHotelRequest(Guid id, [FromBody] HotelRequestDTO commonHotelRequest)
         {
             try
             {
-                commonHotelRequest = _HotelService.ValidateHotelRequest(commonHotelRequest);
+                commonHotelRequest = _HotelService.GetHotelRequestDetails(commonHotelRequest);
                 if (commonHotelRequest.ErrorStatus)
                 {
                     _logger.LogError($"Something went wrong inside CreateOwner action: {commonHotelRequest.ErrorMessage}");
@@ -75,21 +65,15 @@ namespace TrawtelCRMAPI.Controllers
                     _logger.LogError($"Hotel with id: {id}, hasn't been found in db.");
                     return NotFound();
                 }
-                HotelRequest HotelRequest = new HotelRequest();
-                HotelRequest.HotelRequestId = Guid.NewGuid();
-                HotelRequest.AgentId = commonHotelRequest.AgentId;
-                HotelRequest.ClientId = commonHotelRequest.ClientId;
-                HotelRequest.CheckIn = commonHotelRequest.CheckIn;
-                HotelRequest.CheckOut = commonHotelRequest.CheckOut;
-                HotelRequest.Status = CommonEnums.Status.New.ToString();
-                HotelRequest.CreatedDate = DateTime.UtcNow;
-                HotelRequest.UpdatedDate = DateTime.UtcNow;
-                HotelRequest.RoomDetails = JsonConvert.SerializeObject(new { commonHotelRequest.RoomDetails });
-                HotelRequest.Location = JsonConvert.SerializeObject(new { commonHotelRequest.Location });
-
-                _repository.Hotel.UpdateHotelRequest(HotelRequest);
-                _repository.Save();
-                return NoContent();
+                var response = _HotelService.SaveHotelRequest(commonHotelRequest, "Update");
+                if (response.Status)
+                {
+                    return StatusCode(200, "Hotel Request Updated");
+                }
+                else
+                {
+                    return StatusCode(400, response.ErrorMessage);
+                }
             }
             catch (Exception ex)
             {
@@ -112,8 +96,8 @@ namespace TrawtelCRMAPI.Controllers
                 else
                 {
                     _logger.LogInfo($"Returned Hotel with id: {RequestId}");
-                    var ownerResult = getRequestDTO(HotelRequest);
-                    return Ok(ownerResult);
+                    var ownerResult = _HotelService.getRequestDTO(HotelRequest);
+                    return Ok(new Response<HotelRequestDTO>(ownerResult));
                 }
             }
             catch (Exception ex)
@@ -124,7 +108,7 @@ namespace TrawtelCRMAPI.Controllers
         }
 
         [HttpGet("GetHotelRequestsByAgent/{AgentId}")]
-        public IActionResult GetHotelRequestsByAgent(Guid AgentId)
+        public IActionResult GetHotelRequestsByAgent(Guid AgentId, [FromQuery] PaginationFilter filter)
         {
             try
             {
@@ -140,9 +124,10 @@ namespace TrawtelCRMAPI.Controllers
                     _logger.LogInfo($"Returned Agent with id: {AgentId}");
                     foreach (var request in HotelRequest)
                     {
-                        listRequests.Add(getRequestDTO(request));
+                        listRequests.Add(_HotelService.getRequestDTO(request));
                     }
-                    return Ok(listRequests);
+                    var pagedResponse = _HotelService.GetPagination(listRequests, filter, Request.Path.Value, uriService);
+                    return Ok(pagedResponse);
                 }
             }
             catch (Exception ex)
@@ -153,7 +138,7 @@ namespace TrawtelCRMAPI.Controllers
         }
 
         [HttpGet("GetHotelRequestsByClient/{ClientId}")]
-        public IActionResult GetHotelRequestsByClient(Guid ClientId)
+        public IActionResult GetHotelRequestsByClient(Guid ClientId, [FromQuery] PaginationFilter filter)
         {
             try
             {
@@ -169,9 +154,10 @@ namespace TrawtelCRMAPI.Controllers
                     _logger.LogInfo($"Returned Agent with id: {ClientId}");
                     foreach (var request in HotelRequest)
                     {
-                        listRequests.Add(getRequestDTO(request));
+                        listRequests.Add(_HotelService.getRequestDTO(request));
                     }
-                    return Ok(listRequests);
+                    var pagedResponse = _HotelService.GetPagination(listRequests, filter, Request.Path.Value, uriService);
+                    return Ok(pagedResponse);
                 }
             }
             catch (Exception ex)
@@ -179,27 +165,6 @@ namespace TrawtelCRMAPI.Controllers
                 _logger.LogError($"Something went wrong inside GetAgentById action: {ex.Message}");
                 return StatusCode(500, "Internal server error");
             }
-        }
-
-        private HotelRequestDTO getRequestDTO(HotelRequest HotelRequest)
-        {
-            HotelRequestDTO HotelRequestDTO = new HotelRequestDTO();
-            HotelRequestDTO.HotelRequestId = HotelRequest.HotelRequestId;
-            HotelRequestDTO.AgentId = HotelRequest.AgentId;
-            HotelRequestDTO.ClientId = HotelRequest.ClientId;
-            HotelRequestDTO.CheckIn = HotelRequest.CheckIn;
-            HotelRequestDTO.CheckOut = HotelRequest.CheckOut;
-            HotelRequestDTO.Status = HotelRequest.Status;
-            HotelRequestDTO.CreatedDate = HotelRequest.CreatedDate;
-            HotelRequestDTO.UpdatedDate = HotelRequest.UpdatedDate;
-
-            var roommodel = JsonConvert.DeserializeObject<HotelRequestRoot>(HotelRequest.RoomDetails);
-            HotelRequestDTO.RoomDetails = roommodel?.roomDetails;
-
-            var locationmodel = JsonConvert.DeserializeObject<HotelRequestRoot>(HotelRequest.Location);
-            HotelRequestDTO.Location = locationmodel?.location;
-
-            return HotelRequestDTO;
         }
     }
 }

@@ -16,7 +16,7 @@ namespace Entities.Models
         public int Infants { get; set; }
         public string? flightJourneyRequest { get; set; }
         public string? Passengers { get; set; }
-        public string? CabinClass { get; set; }        
+        public string? CabinClass { get; set; }
         public DateTime TravelDate { get; set; }
         public DateTime CreatedDate { get; set; }
         public string? Status { get; set; }

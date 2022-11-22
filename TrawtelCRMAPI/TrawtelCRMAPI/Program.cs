@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using TrawtelAPI.CustomMiddleware;
 using TrawtelCRMAPI.Extensions;
+using TrawtelCRMAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,14 @@ builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddAWSService<IAmazonS3>();
 builder.Services.AddAWSService<IAmazonDynamoDB>();
 builder.Services.AddScoped<IDynamoDBContext, DynamoDBContext>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<IUriService>(o =>
+{
+    var accessor = o.GetRequiredService<IHttpContextAccessor>();
+    var request = accessor.HttpContext.Request;
+    var uri = string.Concat(request.Scheme, "://", request.Host.ToUriComponent());
+    return new UriService(uri);
+});
 builder.Services.AddControllers();
 var app = builder.Build();
 

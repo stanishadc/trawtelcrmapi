@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Contracts;
+using Entities;
 using Entities.DataTransferObjects;
 using Entities.Models;
 using Microsoft.AspNetCore.Http;
@@ -79,6 +80,7 @@ namespace TrawtelCRMAPI.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
         [HttpGet("GetVisasByCountryName/{VisaCountry}")]
         public IActionResult GetVisasByCountryName(string VisaCountry)
         {
@@ -116,6 +118,7 @@ namespace TrawtelCRMAPI.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+
         [HttpGet("GetVisasByCountryId/{CountryId}")]
         public IActionResult GetVisasByCountryId(string CountryId)
         {
@@ -153,6 +156,7 @@ namespace TrawtelCRMAPI.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+
         [HttpPost]
         public IActionResult CreateVisa([FromBody] VisaDTO visaDTO)
         {
@@ -193,6 +197,7 @@ namespace TrawtelCRMAPI.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
         [HttpPut("{id}")]
         public IActionResult UpdateVisa(Guid id, [FromBody] VisaDTO visaDTO)
         {
@@ -236,6 +241,7 @@ namespace TrawtelCRMAPI.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+
         [HttpDelete("{id}")]
         public IActionResult DeleteVisa(Guid id)
         {
@@ -257,5 +263,6 @@ namespace TrawtelCRMAPI.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+
     }
 }

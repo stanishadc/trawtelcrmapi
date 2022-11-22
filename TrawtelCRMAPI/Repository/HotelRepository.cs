@@ -1,8 +1,6 @@
 ﻿using Contracts;
 using Entities;
 using Entities.Models;
-using TripJack;
-using static Entities.CommonEnums;
 
 namespace Repository
 {
@@ -15,9 +13,7 @@ namespace Repository
         }
         public IEnumerable<HotelRequest> GetHotelRequestsByAgent(Guid AgentId)
         {
-            return FindAll()
-                .OrderBy(ow => ow.CreatedDate)
-                .ToList();
+            return FindByCondition(client => client.AgentId.Equals(AgentId)).ToList();
         }
         public HotelRequest GetHotelRequestById(Guid HotelRequestId)
         {
