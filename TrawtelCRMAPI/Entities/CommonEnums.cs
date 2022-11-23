@@ -35,6 +35,12 @@ namespace Entities
             Expired,
             Closed
         }
+        public enum UserStatus
+        {
+            Active,
+            Pending,
+            Blocked
+        }
         public enum BookingStatus
         {
             Booked,

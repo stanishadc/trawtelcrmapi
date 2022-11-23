@@ -1,4 +1,5 @@
-﻿using Entities.Models;
+﻿using Entities.Common;
+using Entities.Models;
 
 namespace Contracts
 {
@@ -9,5 +10,6 @@ namespace Contracts
         void CreateUser(User user);
         void UpdateUser(User user);
         void DeleteUser(User user);
+        Response<User> CheckLogin(string? UserName, string? Password);
     }
 }

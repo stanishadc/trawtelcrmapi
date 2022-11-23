@@ -10,15 +10,21 @@ namespace Repository
             : base(repositoryContext)
         {
         }
-        public IEnumerable<UserKey> GetAllUserKeys()
+        public UserKey GetUserKeyByAgentId(Guid AgentId)
         {
-            return FindAll()
-                .OrderBy(ow => ow.CreatedDate)
-                .ToList();
+            return FindByCondition(user => user.AgentId.Equals(AgentId)).FirstOrDefault();
         }
-        public UserKey GetUserKeyById(Guid UserKeyId)
+        public bool CheckValidUserkey(string APIKEY)
         {
-            return FindByCondition(user => user.UserKeyId.Equals(UserKeyId)).FirstOrDefault();
+            var response = FindByCondition(user => user.SecretKey.Equals(APIKEY) && user.Status == "0").FirstOrDefault();
+            if (response == null)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
         public void CreateUserKey(UserKey user)
         {

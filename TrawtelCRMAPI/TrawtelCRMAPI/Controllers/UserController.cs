@@ -4,6 +4,7 @@ using Entities.DataTransferObjects;
 using Entities.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
+using TrawtelCRMAPI.ViewModel;
 
 namespace TrawtelCRMAPI.Controllers
 {
@@ -57,6 +58,53 @@ namespace TrawtelCRMAPI.Controllers
             {
                 _logger.LogError($"Something went wrong inside GetUserById action: {ex.Message}");
                 return StatusCode(500, "Internal server error");
+            }
+        }
+        [HttpPost("Login")]
+        public IActionResult Login([FromBody] Login login)
+        {
+            try
+            {
+                if (login is null)
+                {
+                    _logger.LogError("User object sent from client is null.");
+                    return BadRequest("login object is null");
+                }
+                if (!ModelState.IsValid)
+                {
+                    _logger.LogError("Invalid User object sent from client.");
+                    return BadRequest("Invalid model object");
+                }
+                var password = EncodePasswordToBase64(login.Password);
+                var user = _repository.User.CheckLogin(login.Username, password);
+                if (user.Succeeded)
+                {
+                    var UserKey = _repository.UserKey.GetUserKeyByAgentId(user.Data.AgentId);
+                    if (UserKey != null)
+                    {
+                        LoginDTO loginDTO = new LoginDTO();
+                        {
+                            loginDTO.Username = user.Data.UserName;
+                            loginDTO.AgentId = user.Data.AgentId;
+                            loginDTO.UserId = user.Data.UserId;
+                            loginDTO.UserKey = UserKey.SecretKey;
+                        }
+                        return Ok(loginDTO);
+                    }
+                    else
+                    {
+                        return StatusCode(400, "Account Key is expired. Please check with administrator");
+                    }
+                }
+                else
+                {
+                    return StatusCode(400, user);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Something went wrong inside CreateOwner action: {ex.Message}");
+                return StatusCode(500, ex.Message);
             }
         }
         [HttpPost]
