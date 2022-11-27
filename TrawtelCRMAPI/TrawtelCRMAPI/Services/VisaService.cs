@@ -49,9 +49,9 @@ namespace TrawtelCRMAPI.Services
             }
             return VisaRequestDTO;
         }
-        public APIResponse SaveVisaRequest(VisaRequestDTO commonVisaRequest, string QueryType)
+        public Response<object> SaveVisaRequest(VisaRequestDTO commonVisaRequest, string QueryType)
         {
-            APIResponse aPIResponse = new APIResponse();
+            Response<object> aPIResponse = new Response<object>();
             try
             {
                 VisaRequest VisaRequest = new VisaRequest();
@@ -63,7 +63,7 @@ namespace TrawtelCRMAPI.Services
                 {
                     VisaRequest.NoOfApplicants = commonVisaRequest.Applicants.Count;
                     var apiresponse = _travelerService.ConvertTravelerToStringArray(commonVisaRequest.Applicants);
-                    if (apiresponse.Status)
+                    if (apiresponse.Succeeded)
                     {
                         VisaRequest.Applicants = JsonConvert.SerializeObject((string[]?)apiresponse.Data);
                     }
@@ -75,8 +75,8 @@ namespace TrawtelCRMAPI.Services
                 else
                 {
                     VisaRequest.NoOfApplicants = 0;
-                    aPIResponse.Status = false;
-                    aPIResponse.ErrorMessage = "Please enter applicants details";
+                    aPIResponse.Succeeded = false;
+                    aPIResponse.Message = "Please enter applicants details";
                     return aPIResponse;
                 }
                 VisaRequest.Location = JsonConvert.SerializeObject(new { commonVisaRequest.Location });
@@ -87,6 +87,7 @@ namespace TrawtelCRMAPI.Services
                     VisaRequest.CreatedDate = DateTime.UtcNow;
                     VisaRequest.UpdatedDate = DateTime.UtcNow;
                     _repository.VisaRequest.CreateVisaRequest(VisaRequest);
+                    aPIResponse.Message = "Visa Request Created";
                 }
                 else
                 {
@@ -94,16 +95,18 @@ namespace TrawtelCRMAPI.Services
                     VisaRequest.Status = CommonEnums.Status.Replied.ToString();
                     VisaRequest.UpdatedDate = DateTime.UtcNow;
                     _repository.VisaRequest.UpdateVisaRequest(VisaRequest);
+                    aPIResponse.Message = "Visa Request Updated";
                 }
                 _repository.Save();
-                aPIResponse.Status = true;
+                aPIResponse.Succeeded = true;
+                return aPIResponse;
             }
             catch (Exception ex)
             {
-                aPIResponse.Status = false;
-                aPIResponse.ErrorMessage = ex.Message;
+                aPIResponse.Succeeded = false;
+                aPIResponse.Message = ex.Message;
+                return aPIResponse;
             }
-            return aPIResponse;
         }
         internal object GetPagination(List<VisaRequestDTO> listRequests, PaginationFilter filter, string? route, IUriService uriService)
         {

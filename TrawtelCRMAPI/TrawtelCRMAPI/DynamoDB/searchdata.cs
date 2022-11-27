@@ -2,16 +2,16 @@
 
 namespace TrawtelCRMAPI.DynamoDB
 {
-    [DynamoDBTable("searchdata")]
-    public class searchdata
+    [DynamoDBTable("APISearchData")]
+    public class APISearchData
     {
         [DynamoDBHashKey("id")]
         public Guid Id { get; set; }
 
         [DynamoDBProperty("data")]
-        public string? data { get; set; }
+        public string? Data { get; set; }
 
         [DynamoDBProperty("ttl")]
-        public DateTime ttl { get; set; }
+        public DateTime TTL { get; set; }
     }
 }

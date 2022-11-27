@@ -21,6 +21,36 @@ namespace TrawtelCRMAPI.Controllers
             _repository = repository;
             _mapper = mapper;
         }
+        //[HttpGet("TestEmail")]
+        //public IActionResult TestEmail()
+        //{
+        //    try
+        //    {
+        //        string username = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("AWS")["SMTPUserName"];
+        //        string password = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("AWS")["SMTPPassword"];
+        //        string host = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("AWS")["SMTPHOST"];
+        //        int port = 25;
+        //        using (var client = new System.Net.Mail.SmtpClient(host, port))
+        //        {
+        //            client.Credentials = new System.Net.NetworkCredential(username, password);
+        //            client.EnableSsl = true;
+
+        //            client.Send
+        //            (
+        //                      "stanisha@developerscode.com",  // Replace with the sender address.
+        //                      "taanu51@gmail.com",    // Replace with the recipient address.
+        //                      "Testing Amazon SES through SMTP",
+        //                      "This email was delivered through Amazon SES via the SMTP end point."
+        //            );
+        //        }
+        //            return Ok("ok");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError($"Something went wrong inside GetAllUsers action: {ex.Message}");
+        //        return StatusCode(500, ex.Message);
+        //    }
+        //}
         [HttpGet]
         public IActionResult GetAllUsers()
         {

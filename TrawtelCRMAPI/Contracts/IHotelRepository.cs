@@ -10,5 +10,6 @@ namespace Contracts
         IEnumerable<HotelRequest> GetHotelRequestsByAgent(Guid AgentId);
         HotelRequest GetHotelRequestById(Guid RequestId);
         IEnumerable<HotelRequest> GetHotelRequestsByClient(Guid ClientId);
+        IEnumerable<HotelRequest> GetHotelRequestsByStatus(Guid AgentId, string Status);
     }
 }

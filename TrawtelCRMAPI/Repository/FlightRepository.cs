@@ -1,5 +1,6 @@
 ﻿using Contracts;
 using Entities;
+using Entities.Common;
 using Entities.Models;
 using System.Reflection;
 using TripJack;
@@ -16,18 +17,52 @@ namespace Repository
             _repositoryContext = repositoryContext;
             _tripJackProxy = new TripJackProxy();
         }
-        public CommonFlightsResponse SearchFlights(FlightRequestDTO commonFlightRequest, Guid AgentId, List<AgentSuppliers>? supplierdetails)
+        public Response<CommonFlightsResponse> SearchFlights(FlightRequestDTO commonFlightRequest, Guid AgentId, List<AgentSuppliers>? supplierdetails)
         {
-            CommonFlightsResponse commonFlightsResponse = new CommonFlightsResponse();
+            Response<CommonFlightsResponse> commonFlightsResponse = new Response<CommonFlightsResponse>();
+            CommonFlightsResponse commonFlights = new CommonFlightsResponse();
+
+            commonFlights.commonFlightRequest = commonFlightRequest;
+            List<CommonFlightDetails> commonFlightDetailsList = new List<CommonFlightDetails>();
             Parallel.ForEach(supplierdetails, AS =>
                 {
                     if (AS.SupplierName == SupplierNames.TripJack.ToString())
                     {
-                        commonFlightsResponse = _tripJackProxy.CreateSearchRequest(commonFlightRequest, AS);
+                        List<CommonFlightDetails> tripjackFlightDetailsList = new List<CommonFlightDetails>();
+                        tripjackFlightDetailsList = _tripJackProxy.CreateSearchRequest(commonFlightRequest, AS, tripjackFlightDetailsList);
+                        commonFlightDetailsList.AddRange(tripjackFlightDetailsList);
                     }
                 });
+            commonFlights.commonFlightDetails = commonFlightDetailsList;
+            commonFlightsResponse.Data = commonFlights;
+            commonFlightsResponse.Succeeded = true;
             return commonFlightsResponse;
-        }        
+        }
+        public Response<CommonFlightsResponse> GetFlightDetails(FlightRequestDTO commonFlightRequest, Guid AgentId, List<AgentSuppliers>? supplierdetails)
+        {
+            Response<CommonFlightsResponse> commonFlightsResponse = new Response<CommonFlightsResponse>();
+            CommonFlightsResponse commonFlights = new CommonFlightsResponse();
+
+            commonFlights.commonFlightRequest = commonFlightRequest;
+            List<CommonFlightDetails> commonFlightDetailsList = new List<CommonFlightDetails>();
+            Parallel.ForEach(supplierdetails, AS =>
+            {
+                if (AS.SupplierName == SupplierNames.TripJack.ToString())
+                {
+                    List<CommonFlightDetails> tripjackFlightDetailsList = new List<CommonFlightDetails>();
+                    tripjackFlightDetailsList = _tripJackProxy.CreateSearchRequest(commonFlightRequest, AS, tripjackFlightDetailsList);
+                    commonFlightDetailsList.AddRange(tripjackFlightDetailsList);
+                }
+            });
+            commonFlights.commonFlightDetails = commonFlightDetailsList;
+            commonFlightsResponse.Data = commonFlights;
+            commonFlightsResponse.Succeeded = true;
+            return commonFlightsResponse;
+        }
+        public IEnumerable<FlightRequest> GetFlightRequestsByStatus(Guid AgentId, string Status)
+        {
+            return FindByCondition(client => client.AgentId.Equals(AgentId) && client.Status.Equals(Status)).ToList();
+        }
         public IEnumerable<FlightRequest> GetFlightRequestsByAgent(Guid AgentId)
         {
             return FindByCondition(client => client.AgentId.Equals(AgentId)).ToList();

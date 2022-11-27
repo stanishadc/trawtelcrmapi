@@ -33,13 +33,13 @@ namespace TrawtelCRMAPI.Controllers
                     return StatusCode(500, commonHotelRequest.ErrorMessage);
                 }
                 var response = _HotelService.SaveHotelRequest(commonHotelRequest,"Save");
-                if(response.Status)
+                if(response.Succeeded)
                 {
-                    return StatusCode(200, "Hotel Request Created");
+                    return StatusCode(200, response);
                 }
                 else
                 {
-                    return StatusCode(400, response.ErrorMessage);
+                    return StatusCode(400, response.Message);
                 }
             }
             catch (Exception ex)
@@ -66,13 +66,13 @@ namespace TrawtelCRMAPI.Controllers
                     return NotFound();
                 }
                 var response = _HotelService.SaveHotelRequest(commonHotelRequest, "Update");
-                if (response.Status)
+                if (response.Succeeded)
                 {
-                    return StatusCode(200, "Hotel Request Updated");
+                    return StatusCode(200, response);
                 }
                 else
                 {
-                    return StatusCode(400, response.ErrorMessage);
+                    return StatusCode(400, response.Message);
                 }
             }
             catch (Exception ex)

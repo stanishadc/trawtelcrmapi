@@ -1,5 +1,6 @@
 ﻿using Contracts;
 using Entities;
+using Entities.Common;
 using Entities.Models;
 using Newtonsoft.Json;
 using RestSharp;
@@ -26,36 +27,36 @@ namespace TripJack
         {
             //_logger = logger;
         }
-        private APIResponse CallGetRequest(string requestURL, string APIKey)
-        {
-            APIResponse _objResponse = new APIResponse();
-            try
-            {
-                var client = new RestClient(requestURL);
-                var request = new RestRequest();
-                request.AddHeader("apikey", APIKey);
-                request.AddHeader("Content-Type", "application/json");
-                var response = client.Get(request);
-                if (response.IsSuccessStatusCode)
-                {
-                    _objResponse = JsonConvert.DeserializeObject<APIResponse>(response.Content);
-                }
-                else
-                {
-                    _objResponse.Status = false;
-                    _objResponse.Data = response.ResponseStatus;
-                    _objResponse.ErrorMessage = response.StatusDescription;                    
-                }
-                return _objResponse;
-            }
-            catch (Exception ex)
-            {
-                //_logger.LogError("Get Method Failed " + ex);
-                _objResponse.Status = false;
-                _objResponse.ErrorMessage = ex.Message;
-                return _objResponse;
-            }
-        }
+        //private Response<> CallGetRequest(string requestURL, string APIKey)
+        //{
+        //    APIResponse _objResponse = new APIResponse();
+        //    try
+        //    {
+        //        var client = new RestClient(requestURL);
+        //        var request = new RestRequest();
+        //        request.AddHeader("apikey", APIKey);
+        //        request.AddHeader("Content-Type", "application/json");
+        //        var response = client.Get(request);
+        //        if (response.IsSuccessStatusCode)
+        //        {
+        //            _objResponse = JsonConvert.DeserializeObject<APIResponse>(response.Content);
+        //        }
+        //        else
+        //        {
+        //            _objResponse.Status = false;
+        //            _objResponse.Data = response.ResponseStatus;
+        //            _objResponse.ErrorMessage = response.StatusDescription;                    
+        //        }
+        //        return _objResponse;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        //_logger.LogError("Get Method Failed " + ex);
+        //        _objResponse.Status = false;
+        //        _objResponse.ErrorMessage = ex.Message;
+        //        return _objResponse;
+        //    }
+        //}
         private RestResponse CallPostRequest(string requestURL, string RequestData, AgentSuppliers agentSuppliers)
         {
             var client = new RestClient(agentSuppliers.SupplierURL + requestURL);
@@ -218,23 +219,13 @@ namespace TripJack
         #endregion
 
         #region Create Search Request with Markup
-        public CommonFlightsResponse CreateSearchRequest(FlightRequestDTO commonFlightRequest, AgentSuppliers agentSuppliers)
+        public List<CommonFlightDetails> CreateSearchRequest(FlightRequestDTO commonFlightRequest, AgentSuppliers agentSuppliers, List<CommonFlightDetails> commonFlightDetailsList)
         {
-            CommonFlightsResponse _objResponse = new CommonFlightsResponse();
-            try
-            {
-                TripJackSearchRequest tripJackSearchRequest = GetTripJackSearchMarkup(commonFlightRequest);
-                var data = JsonConvert.SerializeObject(tripJackSearchRequest);
-                var Response = LoadJson();//searchAllRequest(data, commonFlightRequest);//
-                _objResponse = ReadFlightDetails(Response, commonFlightRequest, agentSuppliers);
-                _objResponse.status = true;
-            }
-            catch(Exception ex)
-            {
-                _objResponse.status = false;
-                _objResponse.ErrorMessage= ex.Message;
-            }
-            return _objResponse;
+            TripJackSearchRequest tripJackSearchRequest = GetTripJackSearchMarkup(commonFlightRequest);
+            var data = JsonConvert.SerializeObject(tripJackSearchRequest);
+            var Response = LoadJson();//searchAllRequest(data, commonFlightRequest);//
+            commonFlightDetailsList = ReadFlightDetails(Response, agentSuppliers, commonFlightDetailsList);
+            return commonFlightDetailsList;
         }
         private TripJackSearchRequest GetTripJackSearchMarkup(FlightRequestDTO commonFlightRequest)
         {
@@ -291,9 +282,8 @@ namespace TripJack
         }
         #endregion
         #region Read All Flights Response
-        private CommonFlightsResponse ReadFlightDetails(TripJackSearchResponse tripJackSearchResponse, FlightRequestDTO commonFlightRequest, AgentSuppliers agentSupplier)
+        private List<CommonFlightDetails> ReadFlightDetails(TripJackSearchResponse tripJackSearchResponse, AgentSuppliers agentSupplier, List<CommonFlightDetails> commonFlightDetailsList)
         {
-            CommonFlightsResponse _commonFlightsResponse = new CommonFlightsResponse();
             if (tripJackSearchResponse.searchResult != null)
             {
                 SearchResult searchResult = tripJackSearchResponse.searchResult;
@@ -301,20 +291,17 @@ namespace TripJack
                 {
                     if (searchResult.tripInfos != null)
                     {
-                        _commonFlightsResponse.commonFlightRequest = commonFlightRequest;
-                        List<CommonFlightDetails> commonFlightDetailsList = new List<CommonFlightDetails>();
-                        if (searchResult.tripInfos.ONWARD !=null)
+                        if (searchResult.tripInfos.ONWARD != null)
                         {
-                            CommonFlightDetails commonFlightDetails = new CommonFlightDetails();                            
                             List<ONWARD> listLegs = searchResult.tripInfos.ONWARD;//-->Supplier Legs Data
-                            List<TFLegs> listTFLegs = new List<TFLegs>();//-->Trawtel Legs Data
                             for (int i = 0; i < listLegs.Count; i++)
                             {
-                                TFLegs tFLegs = new TFLegs();
+                                CommonFlightDetails tFLegs = new CommonFlightDetails();
                                 tFLegs.tFSegments = new List<TFSegments>();
-                                tFLegs.Stops = listLegs[i].sI.Count;
+                                tFLegs.Stops = listLegs[i].sI.Count - 1;
                                 tFLegs.SupplierId = agentSupplier.SupplierId;
                                 tFLegs.TFId = Guid.NewGuid();
+                                tFLegs.JourneyType = "ONWARD";
                                 for (int j = 0; j < listLegs[i].sI.Count; j++)
                                 {
                                     SI segments = listLegs[i].sI[j];
@@ -341,24 +328,20 @@ namespace TripJack
                                         tFLegs.tFPriceDetails = tFPriceDetails;
                                     }
                                 }
-                                listTFLegs.Add(tFLegs);
+                                commonFlightDetailsList.Add(tFLegs);
                             }
-                            commonFlightDetails.JourneyType = "ONWARD";
-                            commonFlightDetails.tFLegs = listTFLegs;
-                            commonFlightDetailsList.Add(commonFlightDetails);
                         }
                         if (searchResult.tripInfos.COMBO != null)
                         {
-                            CommonFlightDetails commonFlightDetails = new CommonFlightDetails();                            
                             List<COMBO> listLegs = searchResult.tripInfos.COMBO;//-->Supplier Legs Data
-                            List<TFLegs> listTFLegs = new List<TFLegs>();//-->Trawtel Legs Data
                             for (int i = 0; i < listLegs.Count; i++)
                             {
-                                TFLegs tFLegs = new TFLegs();
+                                CommonFlightDetails tFLegs = new CommonFlightDetails();
                                 tFLegs.tFSegments = new List<TFSegments>();
-                                tFLegs.Stops = listLegs[i].sI.Count;
+                                tFLegs.Stops = listLegs[i].sI.Count - 1;
                                 tFLegs.SupplierId = agentSupplier.SupplierId;
                                 tFLegs.TFId = Guid.NewGuid();
+                                tFLegs.JourneyType = "ONWARD";
                                 for (int j = 0; j < listLegs[i].sI.Count; j++)
                                 {
                                     SI segments = listLegs[i].sI[j];
@@ -372,7 +355,7 @@ namespace TripJack
                                         if (j == listLegs[i].sI.Count - 1)
                                         {
                                             tFLegs.tFArrivalData = tFSegments.tFArrivalData;
-                                        }                                        
+                                        }
                                         tFLegs.tFSegments.Add(tFSegments);
                                     }
                                 }
@@ -385,24 +368,21 @@ namespace TripJack
                                         tFLegs.tFPriceDetails = tFPriceDetails;
                                     }
                                 }
-                                listTFLegs.Add(tFLegs);
+                                commonFlightDetailsList.Add(tFLegs);
                             }
-                            commonFlightDetails.JourneyType = "ONWARD";
-                            commonFlightDetails.tFLegs = listTFLegs;
-                            commonFlightDetailsList.Add(commonFlightDetails);
+
                         }
-                        if(searchResult.tripInfos.RETURN != null)
+                        if (searchResult.tripInfos.RETURN != null)
                         {
-                            CommonFlightDetails commonFlightDetails = new CommonFlightDetails();                            
                             List<RETURN> listLegs = searchResult.tripInfos.RETURN;//-->Supplier Legs Data
-                            List<TFLegs> listTFLegs = new List<TFLegs>();//-->Trawtel Legs Data
                             for (int i = 0; i < listLegs.Count; i++)
                             {
-                                TFLegs tFLegs = new TFLegs();
+                                CommonFlightDetails tFLegs = new CommonFlightDetails();
                                 tFLegs.tFSegments = new List<TFSegments>();
-                                tFLegs.Stops = listLegs[i].sI.Count;
+                                tFLegs.Stops = listLegs[i].sI.Count - 1;
                                 tFLegs.SupplierId = agentSupplier.SupplierId;
                                 tFLegs.TFId = Guid.NewGuid();
+                                tFLegs.JourneyType = "RETURN";
                                 for (int j = 0; j < listLegs[i].sI.Count; j++)
                                 {
                                     SI segments = listLegs[i].sI[j];
@@ -416,7 +396,7 @@ namespace TripJack
                                         if (j == listLegs[i].sI.Count - 1)
                                         {
                                             tFLegs.tFArrivalData = tFSegments.tFArrivalData;
-                                        }                                        
+                                        }
                                         tFLegs.tFSegments.Add(tFSegments);
                                     }
                                 }
@@ -429,22 +409,17 @@ namespace TripJack
                                         tFLegs.tFPriceDetails = tFPriceDetails;
                                     }
                                 }
-                                listTFLegs.Add(tFLegs);
+                                commonFlightDetailsList.Add(tFLegs);
                             }
-                            commonFlightDetails.JourneyType = "RETURN";
-                            commonFlightDetails.tFLegs = listTFLegs;
-                            commonFlightDetailsList.Add(commonFlightDetails);
                         }
-                        _commonFlightsResponse.commonFlightDetails = commonFlightDetailsList;
                     }
                 }
             }
-            return _commonFlightsResponse;
+            return commonFlightDetailsList;
         }
 
         private TFPriceDetails getPriceDetails(TotalPriceList totalPriceList)
         {
-
             TFPriceDetails tFPriceDetails = new TFPriceDetails();
             TFSupplierPrice tFSupplierPrice = new TFSupplierPrice();
             TFAgentPrice tFAgentPrice = new TFAgentPrice();
@@ -582,8 +557,7 @@ namespace TripJack
             tFDepartureData.Country = segments.da.country;
             tFDepartureData.CountryCode = segments.da.countryCode;
             tFDepartureData.Terminal = segments.da.terminal;
-            tFDepartureData.DepartureDate = Convert.ToDateTime(segments.dt).ToString("yyyy-MM-dd");
-            tFDepartureData.DepartureTime = Convert.ToDateTime(segments.dt).ToString("HH:mm");
+            tFDepartureData.DepartureDateTime = Convert.ToDateTime(segments.dt);
             tFSegments.tFDepartureData = tFDepartureData;
 
             TFArrivalData tFArrivalData = new TFArrivalData();
@@ -594,8 +568,7 @@ namespace TripJack
             tFArrivalData.Country = segments.aa.country;
             tFArrivalData.CountryCode = segments.aa.countryCode;
             tFArrivalData.Terminal = segments.aa.terminal;
-            tFArrivalData.ArrivalDate = Convert.ToDateTime(segments.at).ToString("yyyy-MM-dd");
-            tFArrivalData.ArrivalTime = Convert.ToDateTime(segments.at).ToString("HH:mm");
+            tFArrivalData.ArrivalDateTime = Convert.ToDateTime(segments.at);
             tFSegments.tFArrivalData = tFArrivalData;
             return tFSegments;
         }
@@ -606,7 +579,7 @@ namespace TripJack
         {
             try
             {
-                List<TFLegs> tFLegs = new List<TFLegs>();
+                List<CommonFlightDetails> tFLegs = new List<CommonFlightDetails>();
                 for (int i = 0; i < commonFlightDetails.Count; i++)
                 {
                     for (int j = 0; j < tFLegs.Count; j++)
@@ -630,7 +603,7 @@ namespace TripJack
             }
             return null;
         }
-        private string CreateReviewRequest(List<TFLegs> tFLegs)
+        private string CreateReviewRequest(List<CommonFlightDetails> tFLegs)
         {
             TripJackReviewRequest tripJackReviewRequest = new TripJackReviewRequest();
             List<string> list = new List<string>();

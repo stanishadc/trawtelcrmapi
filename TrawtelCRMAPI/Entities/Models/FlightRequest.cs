@@ -52,6 +52,16 @@ namespace Entities.Models
         [NotMapped]
         public string? ErrorMessage { get; set; }
     }
+    public class FlightJourneyRequest
+    {
+        [Key]
+        public Guid FlightJourneyRequestId { get; set; }
+        public string? TypeOfJourney { get; set; }//onward, return
+        public Location? LocationFrom { get; set; }
+        public Location? LocationTo { get; set; }
+        public DateTime DepartureDate { get; set; }
+        public DateTime ReturnDate { get; set; }
+    }
     public class AgentSuppliers
     {
         public Guid SupplierId { get; set; }
@@ -65,17 +75,12 @@ namespace Entities.Models
     {
         public FlightRequestDTO? commonFlightRequest { get; set; }
         public List<CommonFlightDetails>? commonFlightDetails { get; set; }
-        public bool? status { get; set; }
-        public string? ErrorMessage{get;set;}
+        //public bool? status { get; set; }
+        //public string? ErrorMessage{get;set;}
     }
     public class CommonFlightDetails
     {
-        
         public string? JourneyType { get; set; }
-        public List<TFLegs>? tFLegs { get; set; }
-    }
-    public class TFLegs
-    {
         public Guid TFId { get; set; }
         public Guid SupplierId { get; set; }
         public string? SupplierLegId { get; set; }
@@ -85,9 +90,9 @@ namespace Entities.Models
         public int Stops { get; set; }
         public bool MealType { get; set; }
         public int NoOfSeats { get; set; }
-        public int RefundType { get; set; }        
-        public TFPriceDetails? tFPriceDetails { get; set; }        
+        public int RefundType { get; set; }
         public List<TFSegments>? tFSegments { get; set; }
+        public TFPriceDetails? tFPriceDetails { get; set; }        
     }
     public class TFSegments
     {
@@ -145,8 +150,7 @@ namespace Entities.Models
     }
     public class TFDepartureData
     {
-        public string? DepartureDate { get; set; }
-        public string? DepartureTime { get; set; }
+        public DateTime? DepartureDateTime { get; set; }
         public string? AirportCode { get; set; }
         public string? AirportName { get; set; }
         public string? CityCode { get; set; }
@@ -157,8 +161,7 @@ namespace Entities.Models
     }
     public class TFArrivalData
     {
-        public string? ArrivalDate { get; set; }
-        public string? ArrivalTime { get; set; }
+        public DateTime? ArrivalDateTime { get; set; }
         public string? AirportCode { get; set; }
         public string? AirportName { get; set; }
         public string? CityCode { get; set; }

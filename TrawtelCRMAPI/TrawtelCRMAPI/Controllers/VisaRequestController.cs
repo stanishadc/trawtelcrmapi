@@ -33,13 +33,13 @@ namespace TrawtelCRMAPI.Controllers
                     return StatusCode(500, commonVisaRequest.ErrorMessage);
                 }
                 var response = _visaService.SaveVisaRequest(commonVisaRequest, "Save");
-                if (response.Status)
+                if (response.Succeeded)
                 {
-                    return StatusCode(200, "Visa Request Created");
+                    return StatusCode(200, response);
                 }
                 else
                 {
-                    return StatusCode(400, response.ErrorMessage);
+                    return StatusCode(400, response.Message);
                 }
             }
             catch (Exception ex)
@@ -66,13 +66,13 @@ namespace TrawtelCRMAPI.Controllers
                     return NotFound();
                 }
                 var response = _visaService.SaveVisaRequest(commonVisaRequest, "Update");
-                if (response.Status)
+                if (response.Succeeded)
                 {
-                    return StatusCode(200, "Visa Request Updated");
+                    return StatusCode(200, response);
                 }
                 else
                 {
-                    return StatusCode(400, response.ErrorMessage);
+                    return StatusCode(400, response.Message);
                 }
             }
             catch (Exception ex)

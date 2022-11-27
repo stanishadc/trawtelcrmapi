@@ -15,5 +15,6 @@ namespace Contracts
         IEnumerable<VisaRequest> GetVisaRequestsByAgent(Guid AgentId);
         VisaRequest GetVisaRequestById(Guid RequestId);
         IEnumerable<VisaRequest> GetVisaRequestsByClient(Guid ClientId);
+        IEnumerable<VisaRequest> GetVisaRequestsByStatus(Guid AgentId, string Status);
     }
 }

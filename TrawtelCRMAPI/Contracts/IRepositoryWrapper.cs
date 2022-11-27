@@ -17,7 +17,6 @@ namespace Contracts
         IVisaRepository Visa { get; }
         IVisaPriceRepository VisaPrice { get; }
         IVisaCountryRepository VisaCountry { get; }
-        IRequestRepository Request { get; }
         IBookingRepository Booking { get; }
         ITravelerRepository Traveler { get; }
         IFlightRepository Flight { get; }

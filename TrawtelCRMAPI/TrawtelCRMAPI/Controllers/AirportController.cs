@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Contracts;
+using Entities.Common;
 using Entities.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,52 +16,52 @@ namespace TrawtelCRMAPI.Controllers
             _repository = repository;
         }
         [HttpGet("get")]
-        public APIResponse GetAirports()
+        public Response<List<Airport>> GetAirports()
         {
-            APIResponse _apiResponse = new APIResponse();
+            Response<List<Airport>> _apiResponse = new Response<List<Airport>>();
             try
             {
                 var response = _repository.Airport.GetAirports();
-                if (response == null)
+                if (response.Count > 0)
                 {
-                    _apiResponse.Status = false;
-                    _apiResponse.ErrorMessage = "No Records Found";
+                    _apiResponse.Data = response;
+                    _apiResponse.Succeeded = true;
                 }
                 else
                 {
-                    _apiResponse.Data = response;
-                    _apiResponse.Status = true;
+                    _apiResponse.Succeeded = false;
+                    _apiResponse.Message = "No Records Found";
                 }
             }
             catch (Exception ex)
             {
-                _apiResponse.Status = false;
-                _apiResponse.ErrorMessage = ex.ToString();
+                _apiResponse.Succeeded = false;
+                _apiResponse.Message = ex.ToString();
             }
             return _apiResponse;
         }
         [HttpGet("search")]
-        public APIResponse SearchAirports(string searchkey)
+        public Response<List<Airport>> SearchAirports(string searchkey)
         {
-            APIResponse _apiResponse = new APIResponse();
+            Response<List<Airport>> _apiResponse = new Response<List<Airport>>();
             try
             {
                 var response = _repository.Airport.SearchAirports(searchkey);
-                if (response == null)
+                if (response.Count > 0)
                 {
-                    _apiResponse.Status = false;
-                    _apiResponse.ErrorMessage = "No Records Found";
+                    _apiResponse.Data = response;
+                    _apiResponse.Succeeded = true;
                 }
                 else
                 {
-                    _apiResponse.Data = response;
-                    _apiResponse.Status = true;
+                    _apiResponse.Succeeded = false;
+                    _apiResponse.Message = "No Records Found";
                 }
             }
             catch (Exception ex)
             {
-                _apiResponse.Status = false;
-                _apiResponse.ErrorMessage = ex.ToString();
+                _apiResponse.Succeeded = false;
+                _apiResponse.Message = ex.ToString();
             }
             return _apiResponse;
         }

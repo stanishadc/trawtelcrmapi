@@ -17,7 +17,6 @@ namespace Entities
         public DbSet<Client>? Clients { get; set; }
         public DbSet<SupplierCode>? SupplierCodes { get; set; }
         public DbSet<Supplier>? Suppliers { get; set; }
-        public DbSet<Request>? Requests { get; set; }
         public DbSet<Booking>? Bookings { get; set; }
         public DbSet<Traveler>? Traveler { get; set; }
         public DbSet<FlightRequest>? FlightRequests { get; set; }

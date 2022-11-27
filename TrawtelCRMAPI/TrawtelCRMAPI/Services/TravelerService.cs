@@ -1,5 +1,6 @@
 ﻿using Contracts;
 using Entities;
+using Entities.Common;
 using Entities.Models;
 using Newtonsoft.Json;
 
@@ -12,13 +13,13 @@ namespace TrawtelCRMAPI.Services
         {
             _repository = repository;
         }
-        public APIResponse ValidateTraveler(Traveler traveler)
+        public Response<object> ValidateTraveler(Traveler traveler)
         {
-            APIResponse aPIResponse = new APIResponse();
+            Response<object> aPIResponse = new Response<object>();
             if (traveler.TravelerType == null)
             {
-                aPIResponse.Status = false;
-                aPIResponse.ErrorMessage = "Traveler Type should not be null";
+                aPIResponse.Succeeded = false;
+                aPIResponse.Message = "Traveler Type should not be null";
                 return aPIResponse;
             }
             if (traveler.TravelerType == CommonEnums.TravellerType.Infant.ToString())
@@ -28,47 +29,47 @@ namespace TrawtelCRMAPI.Services
                     var gettraveler = CalculateYourAge((DateTime)traveler.DateOfBirth);
                     if (gettraveler != CommonEnums.TravellerType.Infant.ToString())
                     {
-                        aPIResponse.Status = false;
-                        aPIResponse.ErrorMessage = "Infant Age should be less than 2 years";
+                        aPIResponse.Succeeded = false;
+                        aPIResponse.Message = "Infant Age should be less than 2 years";
                         return aPIResponse;
                     }
                 }
                 else
                 {
-                    aPIResponse.Status = false;
-                    aPIResponse.ErrorMessage = "Please enter DateOfBirth for Infant";
+                    aPIResponse.Succeeded = false;
+                    aPIResponse.Message = "Please enter DateOfBirth for Infant";
                     return aPIResponse;
                 }
-                aPIResponse.Status = false;
-                aPIResponse.ErrorMessage = "Traveler Type should not be null";
+                aPIResponse.Succeeded = false;
+                aPIResponse.Message = "Traveler Type should not be null";
                 return aPIResponse;
             }
             if (string.IsNullOrEmpty(traveler.FirstName))
             {
-                aPIResponse.Status = false;
-                aPIResponse.ErrorMessage = "Please Enter the First Name";
+                aPIResponse.Succeeded = false;
+                aPIResponse.Message = "Please Enter the First Name";
                 return aPIResponse;
             }
             if (string.IsNullOrEmpty(traveler.LastName))
             {
-                aPIResponse.Status = false;
-                aPIResponse.ErrorMessage = "Please Enter the Last Name";
+                aPIResponse.Succeeded = false;
+                aPIResponse.Message = "Please Enter the Last Name";
                 return aPIResponse;
             }
             if (string.IsNullOrEmpty(traveler.Nationality))
             {
-                aPIResponse.Status = false;
-                aPIResponse.ErrorMessage = "Please Enter the Nationality";
+                aPIResponse.Succeeded = false;
+                aPIResponse.Message = "Please Enter the Nationality";
                 return aPIResponse;
             }
-            aPIResponse.Status = true;
+            aPIResponse.Succeeded = true;
             return aPIResponse;
         }
-        public APIResponse SaveTraveler(Traveler traveler)
+        public Response<object> SaveTraveler(Traveler traveler)
         {
-            APIResponse aPIResponse = new APIResponse();
+            Response<object> aPIResponse = new Response<object>();
             aPIResponse = ValidateTraveler(traveler);
-            if(!aPIResponse.Status)
+            if(!aPIResponse.Succeeded)
             {
                 return aPIResponse;
             }
@@ -93,12 +94,12 @@ namespace TrawtelCRMAPI.Services
             {
                 _repository.Traveler.CreateTraveler(traveler);
                 _repository.Save();
-                aPIResponse.Status = true;
+                aPIResponse.Succeeded = true;
                 aPIResponse.Data = traveler.TravelerId.ToString();
             }
             else
             {
-                aPIResponse.Status = true;
+                aPIResponse.Succeeded = true;
                 aPIResponse.Data = travelerId.ToString();
             }
             return aPIResponse;
@@ -117,21 +118,21 @@ namespace TrawtelCRMAPI.Services
             }
             return travelerslist;
         }
-        public APIResponse ConvertTravelerToStringArray(List<Traveler> applicants)
+        public Response<object> ConvertTravelerToStringArray(List<Traveler> applicants)
         {
-            APIResponse aPIResponse = new APIResponse();
+            Response<object> aPIResponse = new Response<object>();
             List<string> travelers = new List<string>();
             var adultapplicants = applicants.Where(t => t.TravelerType == CommonEnums.TravellerType.Adult.ToString()).ToList();
             if(adultapplicants.Count == 0)
             {
-                aPIResponse.Status = false;
-                aPIResponse.ErrorMessage = "Atleast One Adult is Mandatory";
+                aPIResponse.Succeeded = false;
+                aPIResponse.Message = "Atleast One Adult is Mandatory";
                 return aPIResponse;
             }
             foreach (Traveler traveler in applicants)
             {
                 var response = SaveTraveler(traveler);
-                if (response.Status)
+                if (response.Succeeded)
                 {
                     travelers.Add(response.Data.ToString());
                 }
@@ -140,7 +141,7 @@ namespace TrawtelCRMAPI.Services
                     return response;
                 }
             }
-            aPIResponse.Status = true;
+            aPIResponse.Succeeded = true;
             aPIResponse.Data = travelers.ToArray();
             return aPIResponse;
         }

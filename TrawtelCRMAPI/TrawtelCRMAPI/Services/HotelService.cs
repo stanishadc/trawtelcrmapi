@@ -18,9 +18,9 @@ namespace TrawtelCRMAPI.Services
             _repository = repository;
             _travelerService = new TravelerService(_repository);
         }
-        public APIResponse SaveHotelRequest(HotelRequestDTO commonHotelRequest,string QueryType)
+        public Response<object> SaveHotelRequest(HotelRequestDTO commonHotelRequest,string QueryType)
         {
-            APIResponse aPIResponse = new APIResponse();
+            Response<object> aPIResponse = new Response<object>();
             try
             {
                 HotelRequest HotelRequest = new HotelRequest();
@@ -37,7 +37,7 @@ namespace TrawtelCRMAPI.Services
                         RoomGuestDetails roomGuestDetails = new RoomGuestDetails();
                         var roomDetails = commonHotelRequest.RoomDetails[i];
                         var apiresponse = _travelerService.ConvertTravelerToStringArray(roomDetails.GuestDetails);
-                        if (apiresponse.Status)
+                        if (apiresponse.Succeeded)
                         {
                             roomGuestDetails.Adults = roomDetails.Adults;
                             roomGuestDetails.KidsAge = roomDetails.KidsAge;
@@ -60,6 +60,7 @@ namespace TrawtelCRMAPI.Services
                     HotelRequest.CreatedDate = DateTime.UtcNow;
                     HotelRequest.UpdatedDate = DateTime.UtcNow;
                     _repository.Hotel.CreateHotelRequest(HotelRequest);
+                    aPIResponse.Message = "Hotel Request Created";
                 }
                 else
                 {
@@ -67,14 +68,15 @@ namespace TrawtelCRMAPI.Services
                     HotelRequest.Status = CommonEnums.Status.Replied.ToString();
                     HotelRequest.UpdatedDate = DateTime.UtcNow;
                     _repository.Hotel.UpdateHotelRequest(HotelRequest);
+                    aPIResponse.Message = "Hotel Request Updated";
                 }
                 _repository.Save();
-                aPIResponse.Status = true;
+                aPIResponse.Succeeded = true;
             }
             catch(Exception ex)
             {
-                aPIResponse.Status = false;
-                aPIResponse.ErrorMessage = ex.Message;
+                aPIResponse.Succeeded = false;
+                aPIResponse.Message = ex.Message;
             }
             return aPIResponse;
         }

@@ -23,18 +23,18 @@ namespace TrawtelCRMAPI.Controllers
         private readonly IUriService uriService;
         public FlightController(ILoggerManager logger, IRepositoryWrapper repository, IMapper mapper, IAmazonS3 s3Client, IDynamoDBContext context, IUriService uriService)
         {
+            _context = context;
             _logger = logger;
             _repository = repository;
-            _flightService = new FlightService(s3Client, repository);
-            _context = context;
+            _flightService = new FlightService(s3Client, repository, _context);
             _mapper = mapper;
             this.uriService = uriService;
         }
         [Route("Search")]
         [HttpPost]
-        public APIResponse SearcAllFlights([FromBody] FlightRequestDTO commonFlightRequest)
+        public IActionResult SearcAllFlights([FromBody] FlightRequestDTO commonFlightRequest, [FromQuery] PaginationFilter filter)
         {
-            APIResponse _objResponse = new APIResponse();
+            Response<List<CommonFlightDetails>> _objResponse = new Response<List<CommonFlightDetails>>();
             try
             {
                 commonFlightRequest = _flightService.GetFlightRequestDetails(commonFlightRequest);
@@ -43,52 +43,39 @@ namespace TrawtelCRMAPI.Controllers
                     var supplierdetails = _repository.SupplierCode.GetDefaultSupplierByAgentId(commonFlightRequest.AgentId, CommonEnums.TravelType.Flight.ToString());
                     if (supplierdetails.Count > 0)
                     {
-                        var flightsResponse = _repository.Flight.SearchFlights(commonFlightRequest, commonFlightRequest.AgentId, supplierdetails);
-                        if ((bool)flightsResponse.status)
+                        var flightsResponse = _flightService.SearchFlights(commonFlightRequest, supplierdetails);
+                        if (flightsResponse.Succeeded)
                         {
-                            var flightsData = flightsResponse.commonFlightDetails;
-                            if (flightsData?.Count > 0)
-                            {
-                                flightsData = _flightService.CustomizeFlights(flightsData);
-
-                                _objResponse.Data = flightsData;
-                                _objResponse.Status = true;
-                                return _objResponse;
-                            }
-                            else
-                            {
-                                _objResponse.ErrorMessage = "No Flights Found";
-                                _objResponse.Status = false;
-                                return _objResponse;
-                            }
+                            var pagedResponse = _flightService.GetFlightPagination(flightsResponse.Data.commonFlightDetails, filter, Request.Path.Value, uriService);
+                            return Ok(pagedResponse);
                         }
                         else
                         {
-                            _objResponse.ErrorMessage = flightsResponse.ErrorMessage;
-                            _objResponse.Status = false;
-                            return _objResponse;
+                            _objResponse.Message = flightsResponse.Message;
+                            _objResponse.Succeeded = false;
+                            return StatusCode(400, _objResponse);
                         }
                     }
                     else
                     {
-                        _objResponse.ErrorMessage = "No Active Supplier";
-                        _objResponse.Status = false;
-                        return _objResponse;
+                        _objResponse.Message = "No Active Supplier";
+                        _objResponse.Succeeded = false;
+                        return StatusCode(400, _objResponse);
                     }
                 }
                 else
                 {
-                    _objResponse.ErrorMessage = commonFlightRequest.ErrorMessage;
-                    _objResponse.Status = false;
-                    return _objResponse;
+                    _objResponse.Message = commonFlightRequest.ErrorMessage;
+                    _objResponse.Succeeded = false;
+                    return StatusCode(400, _objResponse);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError("An exception occurred in the Flight Search Request : " + ex);
-                _objResponse.ErrorMessage = "Error in Search Request";
-                _objResponse.Status = false;
-                return _objResponse;
+                _objResponse.Message = "Error in Search Request";
+                _objResponse.Succeeded = false;
+                return StatusCode(500, _objResponse);
             }
         }
 
@@ -104,13 +91,13 @@ namespace TrawtelCRMAPI.Controllers
                     return StatusCode(500, commonFlightRequest.ErrorMessage);
                 }
                 var response = _flightService.SaveFlightRequest(commonFlightRequest, "Save");
-                if (response.Status)
+                if (response.Succeeded)
                 {
-                    return StatusCode(200, "Flight Request Created");
+                    return StatusCode(200, response);
                 }
                 else
                 {
-                    return StatusCode(400, response.ErrorMessage);
+                    return StatusCode(400, response.Message);
                 }
             }
             catch (Exception ex)
@@ -137,13 +124,13 @@ namespace TrawtelCRMAPI.Controllers
                     return NotFound();
                 }
                 var response = _flightService.SaveFlightRequest(commonFlightRequest, "Save");
-                if (response.Status)
+                if (response.Succeeded)
                 {
-                    return StatusCode(200, "Flight Request Updated");
+                    return StatusCode(200, response);
                 }
                 else
                 {
-                    return StatusCode(400, response.ErrorMessage);
+                    return StatusCode(400, response.Message);
                 }
             }
             catch (Exception ex)

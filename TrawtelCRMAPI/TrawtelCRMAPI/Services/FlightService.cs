@@ -1,9 +1,12 @@
-﻿using Amazon.S3;
+﻿using Amazon.DynamoDBv2.DataModel;
+using Amazon.S3;
 using Contracts;
 using Entities;
 using Entities.Common;
 using Entities.Models;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using TrawtelCRMAPI.DynamoDB;
 using TrawtelCRMAPI.Helpers;
 
 namespace TrawtelCRMAPI.Services
@@ -14,11 +17,15 @@ namespace TrawtelCRMAPI.Services
         TravelerService _travelerService;
         private readonly AmazonService _amazonService;
         private IRepositoryWrapper _repository;
-        public FlightService(IAmazonS3 s3Client, IRepositoryWrapper repository)
+        private readonly IDynamoDBContext _context;
+        DynamoDBService dBService;
+        public FlightService(IAmazonS3 s3Client, IRepositoryWrapper repository, IDynamoDBContext context)
         {
             _amazonService = new AmazonService(s3Client);
             _repository = repository;
             _travelerService = new TravelerService(_repository);
+            _context = context;
+            dBService = new DynamoDBService(_context);
         }
         public FlightRequestDTO GetFlightRequestDetails(FlightRequestDTO flightRequestDTO)
         {
@@ -30,6 +37,57 @@ namespace TrawtelCRMAPI.Services
 
             return flightRequestDTO;
         }
+        public Response<CommonFlightsResponse> SearchFlights(FlightRequestDTO commonFlightRequest, List<AgentSuppliers> supplierdetails)
+        {
+            Response<CommonFlightsResponse> response = new Response<CommonFlightsResponse>();
+            CommonFlightsResponse commonFlights = new CommonFlightsResponse();
+            var flightsResponse = _repository.Flight.SearchFlights(commonFlightRequest, commonFlightRequest.AgentId, supplierdetails);
+            if (flightsResponse.Succeeded)
+            {
+                var flightsData = flightsResponse.Data.commonFlightDetails;
+                if (flightsData?.Count > 0)
+                {
+                    flightsData = CustomizeFlights(flightsData);
+                    //SaveDataInDynamoDB(flightsData);
+                    commonFlights.commonFlightDetails = flightsData;
+                    response.Succeeded = true;
+                    response.Data = commonFlights;
+                    return response;
+                }
+                else
+                {
+                    response.Message = "No Flights Found";
+                    response.Succeeded = false;
+                    return response;
+                }
+            }
+            else
+            {
+                response.Message = flightsResponse.Message;
+                response.Succeeded = false;
+                return response;
+            }
+        }
+        public Response<CommonFlightsResponse> GetFlightDetails(List<CommonFlightDetails> commonFlightDetails)
+        {
+            Response<CommonFlightsResponse> response = new Response<CommonFlightsResponse>();
+            if (commonFlightDetails.Count > 0)
+            {
+                return response;
+            }
+            else
+            {
+                response.Message = "Please select itinerary";
+                response.Succeeded = false;
+                return response;
+            }
+        }
+        private bool SaveDataInDynamoDB(List<CommonFlightDetails> flightsData)
+        {
+            dBService.SaveSearchData(flightsData);
+            return true;
+        }
+
         public List<CommonFlightDetails> CustomizeFlights(List<CommonFlightDetails> commonFlightDetailsList)
         {
             //commonFlightDetailsList = getAirlineLogos(commonFlightDetailsList);
@@ -42,12 +100,9 @@ namespace TrawtelCRMAPI.Services
         {
             for (int i = 0; i < commonFlightDetailsList.Count; i++)
             {
-                for (int j = 0; j < commonFlightDetailsList[i].tFLegs.Count; j++)
+                for (int k = 0; k < commonFlightDetailsList[i].tFSegments.Count; k++)
                 {
-                    for (int k = 0; k < commonFlightDetailsList[i].tFLegs[j].tFSegments.Count; k++)
-                    {
-                        commonFlightDetailsList[i].tFLegs[j].tFSegments[k].AirlineLogo = _amazonService.getAirportlogo(commonFlightDetailsList[i].tFLegs[j].tFSegments[k].AirlineCode);
-                    }
+                    commonFlightDetailsList[i].tFSegments[k].AirlineLogo = _amazonService.getAirportlogo(commonFlightDetailsList[i].tFSegments[k].AirlineCode);
                 }
             }
             return commonFlightDetailsList;
@@ -58,6 +113,8 @@ namespace TrawtelCRMAPI.Services
         }
         public List<CommonFlightDetails> SortFlights(List<CommonFlightDetails> commonFlightDetailsList)
         {
+            //remove duplicates
+            //commonFlightDetailsList = (List<CommonFlightDetails>)commonFlightDetailsList.Distinct();
             return commonFlightDetailsList;
         }
         public FlightRequestDTO getFlightRequestDTO(FlightRequest flightRequest)
@@ -85,9 +142,9 @@ namespace TrawtelCRMAPI.Services
             }
             return flightRequestDTO;
         }
-        public APIResponse SaveFlightRequest(FlightRequestDTO commonFlightRequest, string QueryType)
+        public Response<object> SaveFlightRequest(FlightRequestDTO commonFlightRequest, string QueryType)
         {
-            APIResponse aPIResponse = new APIResponse();
+            Response<object> _apiResponse = new Response<object>();
             try
             {
                 FlightRequest flightRequest = new FlightRequest();
@@ -111,7 +168,7 @@ namespace TrawtelCRMAPI.Services
                 }
                 flightRequest.flightJourneyRequest = JsonConvert.SerializeObject(new { commonFlightRequest.flightJourneyRequest });
                 var apiresponse = _travelerService.ConvertTravelerToStringArray(commonFlightRequest.Passengers);
-                if (apiresponse.Status)
+                if (apiresponse.Succeeded)
                 {
                     flightRequest.Passengers = JsonConvert.SerializeObject((string[]?)apiresponse.Data);
                 }
@@ -126,6 +183,7 @@ namespace TrawtelCRMAPI.Services
                     flightRequest.CreatedDate = DateTime.UtcNow;
                     flightRequest.UpdatedDate = DateTime.UtcNow;
                     _repository.Flight.CreateFlightRequest(flightRequest);
+                    _apiResponse.Message = "Flight Request Created";
                 }
                 else
                 {
@@ -133,16 +191,17 @@ namespace TrawtelCRMAPI.Services
                     flightRequest.Status = CommonEnums.Status.Replied.ToString();
                     flightRequest.UpdatedDate = DateTime.UtcNow;
                     _repository.Flight.UpdateFlightRequest(flightRequest);
+                    _apiResponse.Message = "Flight Request Updated";
                 }
                 _repository.Save();
-                aPIResponse.Status = true;
+                _apiResponse.Succeeded = true;
             }
             catch (Exception ex)
             {
-                aPIResponse.Status = false;
-                aPIResponse.ErrorMessage = ex.Message;
+                _apiResponse.Succeeded = false;
+                _apiResponse.Message = ex.Message;
             }
-            return aPIResponse;
+            return _apiResponse;
         }
         internal object GetPagination(List<FlightRequestDTO> listRequests, PaginationFilter filter, string? route, IUriService uriService)
         {
@@ -152,5 +211,13 @@ namespace TrawtelCRMAPI.Services
             var pagedReponse = PaginationHelper.CreatePagedReponse<FlightRequestDTO>(pagedData, validFilter, totalRecords, uriService, route);
             return pagedReponse;
         }
+        internal object GetFlightPagination(List<CommonFlightDetails> listRequests, PaginationFilter filter, string? route, IUriService uriService)
+        {
+            var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
+            var pagedData = listRequests.Skip((validFilter.PageNumber - 1) * validFilter.PageSize).Take(validFilter.PageSize).ToList();
+            var totalRecords = listRequests.Count;
+            var pagedReponse = PaginationHelper.CreatePagedReponse<CommonFlightDetails>(pagedData, validFilter, totalRecords, uriService, route);
+            return pagedReponse;
+        }        
     }
 }

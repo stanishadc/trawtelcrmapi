@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Entities.Models;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Entities.DataTransferObjects
 {
@@ -17,12 +11,8 @@ namespace Entities.DataTransferObjects
         public Guid ClientId { get; set; }
         public DateTime TravelDate { get; set; }
         public DateTime CreatedDate { get; set; }
-        public DateTime UpdatedDate { get; set; }
-        public TravelRequest? TravelRequest { get; set; }
         public string? Status { get; set; }
-    }
-    public class RequestRoot
-    {
-        public TravelRequest? TravelRequest { get; set; }
+        public string? Location { get; set; }
+        public string? Travelers { get; set; }
     }
 }

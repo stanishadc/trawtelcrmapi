@@ -15,6 +15,10 @@ namespace Repository
         {
             return FindByCondition(client => client.AgentId.Equals(AgentId)).ToList();
         }
+        public IEnumerable<HotelRequest> GetHotelRequestsByStatus(Guid AgentId, string Status)
+        {
+            return FindByCondition(client => client.AgentId.Equals(AgentId) && client.Status.Equals(Status)).ToList();
+        }
         public HotelRequest GetHotelRequestById(Guid HotelRequestId)
         {
             return FindByCondition(client => client.HotelRequestId.Equals(HotelRequestId)).FirstOrDefault();

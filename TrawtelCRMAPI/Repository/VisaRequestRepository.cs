@@ -16,6 +16,10 @@ namespace Repository
         {
             return FindByCondition(client => client.AgentId.Equals(AgentId)).ToList();
         }
+        public IEnumerable<VisaRequest> GetVisaRequestsByStatus(Guid AgentId, string Status)
+        {
+            return FindByCondition(client => client.AgentId.Equals(AgentId) && client.Status.Equals(Status)).ToList();
+        }
         public VisaRequest GetVisaRequestById(Guid VisaRequestId)
         {
             return FindByCondition(client => client.VisaRequestId.Equals(VisaRequestId)).FirstOrDefault();

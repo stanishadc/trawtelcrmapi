@@ -114,18 +114,6 @@ namespace Repository
                 return _visaprice;
             }
         }
-        private IRequestRepository _request;
-        public IRequestRepository Request
-        {
-            get
-            {
-                if (_request == null)
-                {
-                    _request = new RequestRepository(_repoContext);
-                }
-                return _request;
-            }
-        }
         private IBookingRepository _booking;
         public IBookingRepository Booking
         {
