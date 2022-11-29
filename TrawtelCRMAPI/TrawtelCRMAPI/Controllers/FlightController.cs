@@ -34,7 +34,7 @@ namespace TrawtelCRMAPI.Controllers
         [HttpPost]
         public IActionResult SearcAllFlights([FromBody] FlightRequestDTO commonFlightRequest, [FromQuery] PaginationFilter filter)
         {
-            Response<List<CommonFlightDetails>> _objResponse = new Response<List<CommonFlightDetails>>();
+            Response<CommonFlightsResponse> _objResponse = new Response<CommonFlightsResponse>();
             try
             {
                 commonFlightRequest = _flightService.GetFlightRequestDetails(commonFlightRequest);
@@ -46,7 +46,7 @@ namespace TrawtelCRMAPI.Controllers
                         var flightsResponse = _flightService.SearchFlights(commonFlightRequest, supplierdetails);
                         if (flightsResponse.Succeeded)
                         {
-                            var pagedResponse = _flightService.GetFlightPagination(flightsResponse.Data.commonFlightDetails, filter, Request.Path.Value, uriService);
+                            var pagedResponse = _flightService.GetFlightSearchPagination(flightsResponse.Data.commonFlightDetails, filter, Request.Path.Value, uriService, commonFlightRequest);
                             return Ok(pagedResponse);
                         }
                         else

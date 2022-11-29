@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="tripjackinternationalroundtrip.json" />
     <Content Remove="tripjackreturnsearch.json" />
     <Content Remove="tripjackroundtripsearch.json" />
   </ItemGroup>
@@ -37,6 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="tripjackinternationalroundtrip.json" />
     <None Include="tripjackreturnsearch.json" />
     <None Include="tripjackroundtripsearch.json" />
   </ItemGroup>

@@ -75,18 +75,17 @@ namespace Entities.Models
     {
         public FlightRequestDTO? commonFlightRequest { get; set; }
         public List<CommonFlightDetails>? commonFlightDetails { get; set; }
-        //public bool? status { get; set; }
-        //public string? ErrorMessage{get;set;}
     }
     public class CommonFlightDetails
     {
         public string? JourneyType { get; set; }
         public Guid TFId { get; set; }
         public Guid SupplierId { get; set; }
+        public string? SupplierName { get; set; }
         public string? SupplierLegId { get; set; }
         public string? SupplierSessionId { get; set; }
-        public TFDepartureData? tFDepartureData { get; set; }
-        public TFArrivalData? tFArrivalData { get; set; }
+        //public TFDepartureData? tFDepartureData { get; set; }
+        //public TFArrivalData? tFArrivalData { get; set; }
         public int Stops { get; set; }
         public bool MealType { get; set; }
         public int NoOfSeats { get; set; }
@@ -113,7 +112,7 @@ namespace Entities.Models
         public TFAgentPrice? tFAgentPrice { get; set; }
     }
     public class TFSupplierPrice
-    {
+    {        
         public TFPassengerPrice? tFAdults { get; set; }
         public TFPassengerPrice? tFKids { get; set; }
         public TFPassengerPrice? tFInfants { get; set; }

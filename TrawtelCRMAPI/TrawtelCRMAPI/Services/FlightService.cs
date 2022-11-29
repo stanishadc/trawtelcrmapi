@@ -211,12 +211,12 @@ namespace TrawtelCRMAPI.Services
             var pagedReponse = PaginationHelper.CreatePagedReponse<FlightRequestDTO>(pagedData, validFilter, totalRecords, uriService, route);
             return pagedReponse;
         }
-        internal object GetFlightPagination(List<CommonFlightDetails> listRequests, PaginationFilter filter, string? route, IUriService uriService)
+        internal object GetFlightSearchPagination(List<CommonFlightDetails> listRequests, PaginationFilter filter, string? route, IUriService uriService, FlightRequestDTO flightRequestDTO)
         {
             var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
             var pagedData = listRequests.Skip((validFilter.PageNumber - 1) * validFilter.PageSize).Take(validFilter.PageSize).ToList();
             var totalRecords = listRequests.Count;
-            var pagedReponse = PaginationHelper.CreatePagedReponse<CommonFlightDetails>(pagedData, validFilter, totalRecords, uriService, route);
+            var pagedReponse = PaginationHelper.CreateFlightPagedReponse<CommonFlightDetails>(pagedData, validFilter, totalRecords, uriService, route, flightRequestDTO );
             return pagedReponse;
         }        
     }

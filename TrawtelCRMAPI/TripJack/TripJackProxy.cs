@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using RestSharp;
 using System;
 using System.Collections.Generic;
+using static Entities.CommonEnums;
 
 namespace TripJack
 {
@@ -223,8 +224,8 @@ namespace TripJack
         {
             TripJackSearchRequest tripJackSearchRequest = GetTripJackSearchMarkup(commonFlightRequest);
             var data = JsonConvert.SerializeObject(tripJackSearchRequest);
-            var Response = LoadJson();//searchAllRequest(data, commonFlightRequest);//
-            commonFlightDetailsList = ReadFlightDetails(Response, agentSuppliers, commonFlightDetailsList);
+            var Response = searchAllRequest(data, agentSuppliers);//LoadJson();
+            commonFlightDetailsList = ReadFlightDetails(commonFlightRequest, Response, agentSuppliers, commonFlightDetailsList);
             return commonFlightDetailsList;
         }
         private TripJackSearchRequest GetTripJackSearchMarkup(FlightRequestDTO commonFlightRequest)
@@ -237,7 +238,7 @@ namespace TripJack
             tripJackSearchRequest.searchQuery.paxInfo.CHILD = commonFlightRequest.Kids.ToString();
             tripJackSearchRequest.searchQuery.paxInfo.INFANT = commonFlightRequest.Infants.ToString();
             tripJackSearchRequest.searchQuery.routeInfos = new List<RouteInfos>();
-            if (commonFlightRequest.JourneyType == CommonEnums.JourneyTypes.MultiCity.ToString())
+            if (commonFlightRequest.JourneyType == JourneyTypes.MultiCity.ToString())
             {
                 for (int i = 0; i < commonFlightRequest.flightJourneyRequest.Count; i++)
                 {
@@ -250,7 +251,7 @@ namespace TripJack
                     tripJackSearchRequest.searchQuery.routeInfos.Add(routeInfos);
                 }
             }
-            else if (commonFlightRequest.JourneyType == CommonEnums.JourneyTypes.RoundTrip.ToString())
+            else if (commonFlightRequest.JourneyType == JourneyTypes.RoundTrip.ToString())
             {
                 RouteInfos routeInfos = new RouteInfos();
                 routeInfos.fromCityOrAirport = new FromCityOrAirport();
@@ -282,7 +283,7 @@ namespace TripJack
         }
         #endregion
         #region Read All Flights Response
-        private List<CommonFlightDetails> ReadFlightDetails(TripJackSearchResponse tripJackSearchResponse, AgentSuppliers agentSupplier, List<CommonFlightDetails> commonFlightDetailsList)
+        private List<CommonFlightDetails> ReadFlightDetails(FlightRequestDTO commonFlightRequest, TripJackSearchResponse tripJackSearchResponse, AgentSuppliers agentSupplier, List<CommonFlightDetails> commonFlightDetailsList)
         {
             if (tripJackSearchResponse.searchResult != null)
             {
@@ -296,38 +297,7 @@ namespace TripJack
                             List<ONWARD> listLegs = searchResult.tripInfos.ONWARD;//-->Supplier Legs Data
                             for (int i = 0; i < listLegs.Count; i++)
                             {
-                                CommonFlightDetails tFLegs = new CommonFlightDetails();
-                                tFLegs.tFSegments = new List<TFSegments>();
-                                tFLegs.Stops = listLegs[i].sI.Count - 1;
-                                tFLegs.SupplierId = agentSupplier.SupplierId;
-                                tFLegs.TFId = Guid.NewGuid();
-                                tFLegs.JourneyType = "ONWARD";
-                                for (int j = 0; j < listLegs[i].sI.Count; j++)
-                                {
-                                    SI segments = listLegs[i].sI[j];
-                                    if (segments != null)
-                                    {
-                                        TFSegments tFSegments = GetSegmentData(segments);
-                                        if (j == 0)
-                                        {
-                                            tFLegs.tFDepartureData = tFSegments.tFDepartureData;
-                                        }
-                                        if (j == listLegs[i].sI.Count - 1)
-                                        {
-                                            tFLegs.tFArrivalData = tFSegments.tFArrivalData;
-                                        }
-                                        tFLegs.tFSegments.Add(tFSegments);
-                                    }
-                                }
-                                if (listLegs[i].totalPriceList != null)
-                                {
-                                    if (listLegs[i].totalPriceList.Count > 0)
-                                    {
-                                        tFLegs.SupplierLegId = listLegs[i].totalPriceList[0].id;
-                                        TFPriceDetails tFPriceDetails = getPriceDetails(listLegs[i].totalPriceList[0]);
-                                        tFLegs.tFPriceDetails = tFPriceDetails;
-                                    }
-                                }
+                                CommonFlightDetails tFLegs = ReadLeg("ONWARD", agentSupplier, listLegs[i].sI, listLegs[i].totalPriceList, commonFlightRequest);
                                 commonFlightDetailsList.Add(tFLegs);
                             }
                         }
@@ -336,79 +306,16 @@ namespace TripJack
                             List<COMBO> listLegs = searchResult.tripInfos.COMBO;//-->Supplier Legs Data
                             for (int i = 0; i < listLegs.Count; i++)
                             {
-                                CommonFlightDetails tFLegs = new CommonFlightDetails();
-                                tFLegs.tFSegments = new List<TFSegments>();
-                                tFLegs.Stops = listLegs[i].sI.Count - 1;
-                                tFLegs.SupplierId = agentSupplier.SupplierId;
-                                tFLegs.TFId = Guid.NewGuid();
-                                tFLegs.JourneyType = "ONWARD";
-                                for (int j = 0; j < listLegs[i].sI.Count; j++)
-                                {
-                                    SI segments = listLegs[i].sI[j];
-                                    if (segments != null)
-                                    {
-                                        TFSegments tFSegments = GetSegmentData(segments);
-                                        if (j == 0)
-                                        {
-                                            tFLegs.tFDepartureData = tFSegments.tFDepartureData;
-                                        }
-                                        if (j == listLegs[i].sI.Count - 1)
-                                        {
-                                            tFLegs.tFArrivalData = tFSegments.tFArrivalData;
-                                        }
-                                        tFLegs.tFSegments.Add(tFSegments);
-                                    }
-                                }
-                                if (listLegs[i].totalPriceList != null)
-                                {
-                                    if (listLegs[i].totalPriceList.Count > 0)
-                                    {
-                                        tFLegs.SupplierLegId = listLegs[i].totalPriceList[0].id;
-                                        TFPriceDetails tFPriceDetails = getPriceDetails(listLegs[i].totalPriceList[0]);
-                                        tFLegs.tFPriceDetails = tFPriceDetails;
-                                    }
-                                }
+                                CommonFlightDetails tFLegs = ReadLeg("COMBO", agentSupplier, listLegs[i].sI, listLegs[i].totalPriceList, commonFlightRequest);
                                 commonFlightDetailsList.Add(tFLegs);
                             }
-
                         }
                         if (searchResult.tripInfos.RETURN != null)
                         {
                             List<RETURN> listLegs = searchResult.tripInfos.RETURN;//-->Supplier Legs Data
                             for (int i = 0; i < listLegs.Count; i++)
-                            {
-                                CommonFlightDetails tFLegs = new CommonFlightDetails();
-                                tFLegs.tFSegments = new List<TFSegments>();
-                                tFLegs.Stops = listLegs[i].sI.Count - 1;
-                                tFLegs.SupplierId = agentSupplier.SupplierId;
-                                tFLegs.TFId = Guid.NewGuid();
-                                tFLegs.JourneyType = "RETURN";
-                                for (int j = 0; j < listLegs[i].sI.Count; j++)
-                                {
-                                    SI segments = listLegs[i].sI[j];
-                                    if (segments != null)
-                                    {
-                                        TFSegments tFSegments = GetSegmentData(segments);
-                                        if (j == 0)
-                                        {
-                                            tFLegs.tFDepartureData = tFSegments.tFDepartureData;
-                                        }
-                                        if (j == listLegs[i].sI.Count - 1)
-                                        {
-                                            tFLegs.tFArrivalData = tFSegments.tFArrivalData;
-                                        }
-                                        tFLegs.tFSegments.Add(tFSegments);
-                                    }
-                                }
-                                if (listLegs[i].totalPriceList != null)
-                                {
-                                    if (listLegs[i].totalPriceList.Count > 0)
-                                    {
-                                        tFLegs.SupplierLegId = listLegs[i].totalPriceList[0].id;
-                                        TFPriceDetails tFPriceDetails = getPriceDetails(listLegs[i].totalPriceList[0]);
-                                        tFLegs.tFPriceDetails = tFPriceDetails;
-                                    }
-                                }
+                            {                                
+                                CommonFlightDetails tFLegs = ReadLeg("RETURN", agentSupplier, listLegs[i].sI, listLegs[i].totalPriceList, commonFlightRequest);
                                 commonFlightDetailsList.Add(tFLegs);
                             }
                         }
@@ -418,6 +325,35 @@ namespace TripJack
             return commonFlightDetailsList;
         }
 
+        private CommonFlightDetails ReadLeg(string journeyType, AgentSuppliers agentSupplier, List<SI> sI, List<TotalPriceList> totalPriceList, FlightRequestDTO commonFlightRequest)
+        {
+            CommonFlightDetails tFLegs = new CommonFlightDetails();
+            tFLegs.Stops = sI.Count - 1;
+            tFLegs.SupplierId = agentSupplier.SupplierId;
+            tFLegs.SupplierName = agentSupplier.SupplierName;
+            tFLegs.TFId = Guid.NewGuid();
+            tFLegs.JourneyType = journeyType;
+            tFLegs.tFSegments = new List<TFSegments>();
+            for (int j = 0; j < sI.Count; j++)
+            {
+                if (sI[j] != null)
+                {                    
+                    TFSegments tFSegments = GetSegmentData(sI[j]);                    
+                    tFLegs.tFSegments.Add(tFSegments);
+                }
+                if (totalPriceList != null)
+                {
+                    if (totalPriceList.Count > 0)
+                    {
+                        tFLegs.SupplierLegId = totalPriceList[0].id;
+                        TFPriceDetails tFPriceDetails = getPriceDetails(totalPriceList[0]);
+                        tFLegs.tFPriceDetails = tFPriceDetails;
+                    }
+                }
+            }
+            
+            return tFLegs;
+        }
         private TFPriceDetails getPriceDetails(TotalPriceList totalPriceList)
         {
             TFPriceDetails tFPriceDetails = new TFPriceDetails();
@@ -645,7 +581,7 @@ namespace TripJack
         //temporary code
         public TripJackSearchResponse LoadJson()
         {
-            using (StreamReader r = new StreamReader("tripjackroundtripsearch.json"))
+            using (StreamReader r = new StreamReader("tripjackinternationalroundtrip.json"))
             {
                 string json = r.ReadToEnd();
                 return JsonConvert.DeserializeObject<TripJackSearchResponse>(json);
