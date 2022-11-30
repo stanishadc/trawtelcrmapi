@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="tripjackindiamulticity.json" />
     <Content Remove="tripjackinternationalroundtrip.json" />
     <Content Remove="tripjackreturnsearch.json" />
     <Content Remove="tripjackroundtripsearch.json" />
@@ -38,9 +39,25 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="tripjackindiamulticity.json" />
     <None Include="tripjackinternationalroundtrip.json" />
     <None Include="tripjackreturnsearch.json" />
     <None Include="tripjackroundtripsearch.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Assets\airlines.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\airports.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\cities.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\countries.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

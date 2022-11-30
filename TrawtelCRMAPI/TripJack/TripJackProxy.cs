@@ -3,6 +3,7 @@ using Entities;
 using Entities.Common;
 using Entities.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using RestSharp;
 using System;
 using System.Collections.Generic;
@@ -224,7 +225,21 @@ namespace TripJack
         {
             TripJackSearchRequest tripJackSearchRequest = GetTripJackSearchMarkup(commonFlightRequest);
             var data = JsonConvert.SerializeObject(tripJackSearchRequest);
-            var Response = searchAllRequest(data, agentSuppliers);//LoadJson();
+            var Response = LoadJson();//searchAllRequest(data, agentSuppliers);
+            //JToken token = JObject.Parse(Response);
+            //var searchResult = token["searchResult"];
+            //foreach (JToken tripInfos in searchResult.Children())
+            //{
+            //    foreach (JToken gChild in tripInfos.Children())
+            //    {
+            //        foreach (JToken grandChild in gChild)
+            //        {
+            //            var temp = JsonConvert.DeserializeObject<TripInfo>(gChild.ToString());
+
+            //            //
+            //        }
+            //    }
+            //}
             commonFlightDetailsList = ReadFlightDetails(commonFlightRequest, Response, agentSuppliers, commonFlightDetailsList);
             return commonFlightDetailsList;
         }
@@ -581,7 +596,7 @@ namespace TripJack
         //temporary code
         public TripJackSearchResponse LoadJson()
         {
-            using (StreamReader r = new StreamReader("tripjackinternationalroundtrip.json"))
+            using (StreamReader r = new StreamReader("tripjackonewaysearch.json"))
             {
                 string json = r.ReadToEnd();
                 return JsonConvert.DeserializeObject<TripJackSearchResponse>(json);

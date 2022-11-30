@@ -186,6 +186,18 @@ namespace Repository
                 return _airport;
             }
         }
+        private IAirlineRepository _airline;
+        public IAirlineRepository Airline
+        {
+            get
+            {
+                if (_airline == null)
+                {
+                    _airline = new AirlineRepository();
+                }
+                return _airline;
+            }
+        }
         private ICityRepository _city;
         public ICityRepository City
         {
