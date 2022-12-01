@@ -1,10 +1,11 @@
 ﻿using Contracts;
 using Entities.Common;
 using Entities.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TrawtelCRMAPI.Controllers
-{
+{    
     [Route("api/[controller]")]
     [ApiController]
     public class AirlineController : ControllerBase

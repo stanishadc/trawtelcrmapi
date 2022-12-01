@@ -3,11 +3,14 @@ using Contracts;
 using Entities;
 using Entities.DataTransferObjects;
 using Entities.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 
 namespace TrawtelCRMAPI.Controllers
 {
+    [Authorize(Roles = "Agent")]
     [Route("api/[controller]")]
     [ApiController]
     public class BookingController : ControllerBase

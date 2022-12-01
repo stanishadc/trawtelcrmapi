@@ -11,6 +11,7 @@ namespace Contracts
     {
         IEnumerable<Agent> GetAllAgents();
         Agent GetAgentById(Guid AgentId);
+        Agent GetAgentByUserId(Guid UserId);
         void CreateAgent(Agent agent);
         void UpdateAgent(Agent agent);
         void DeleteAgent(Agent agent);

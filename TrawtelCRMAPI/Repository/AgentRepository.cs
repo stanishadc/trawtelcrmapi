@@ -25,6 +25,10 @@ namespace Repository
         {
             return FindByCondition(client => client.AgentId.Equals(AgentId)).FirstOrDefault();
         }
+        public Agent GetAgentByUserId(Guid UserId)
+        {
+            return FindByCondition(client => client.UserId.Equals(UserId)).FirstOrDefault();
+        }        
         public void CreateAgent(Agent client)
         {
             Create(client);

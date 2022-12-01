@@ -72,7 +72,8 @@ namespace Entities
             Client,
             Admin,
             Support,
-            Technical
+            Technical,
+            Agent
         }
         public enum BookingTypes
         {

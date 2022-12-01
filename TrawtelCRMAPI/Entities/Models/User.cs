@@ -16,9 +16,9 @@ namespace Entities.Models
         [Required(ErrorMessage = "Password is required")]
         [StringLength(45, ErrorMessage = "Name can't be longer than 60 characters")]
         public string? Password { get; set; }
-        public Guid AgentId { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime UpdatedDate { get; set; }
         public string? Status { get; set; }
+        public string? Role { get; set; }
     }
 }

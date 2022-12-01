@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
 using Contracts;
 using Entities.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 using TrawtelCRMAPI.Services;
 
 namespace TrawtelCRMAPI.Controllers
 {
+    [Authorize(Roles = "Agent")]
     [Route("api/[controller]")]
     [ApiController]
     public class RequestController : ControllerBase

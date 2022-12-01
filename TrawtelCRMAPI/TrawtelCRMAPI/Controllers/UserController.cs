@@ -3,7 +3,12 @@ using Contracts;
 using Entities.DataTransferObjects;
 using Entities.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 using TrawtelCRMAPI.ViewModel;
 
 namespace TrawtelCRMAPI.Controllers
@@ -15,11 +20,13 @@ namespace TrawtelCRMAPI.Controllers
         private ILoggerManager _logger;
         private IRepositoryWrapper _repository;
         private IMapper _mapper;
-        public UserController(ILoggerManager logger, IRepositoryWrapper repository, IMapper mapper)
+        private readonly IConfiguration _configuration;
+        public UserController(ILoggerManager logger, IRepositoryWrapper repository, IMapper mapper, IConfiguration configuration)
         {
             _logger = logger;
             _repository = repository;
             _mapper = mapper;
+            _configuration = configuration;
         }
         //[HttpGet("TestEmail")]
         //public IActionResult TestEmail()
@@ -109,22 +116,19 @@ namespace TrawtelCRMAPI.Controllers
                 var user = _repository.User.CheckLogin(login.Username, password);
                 if (user.Succeeded)
                 {
-                    var UserKey = _repository.UserKey.GetUserKeyByAgentId(user.Data.AgentId);
-                    if (UserKey != null)
+                    var authClaims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, user.Data.UserName),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                };
+                    authClaims.Add(new Claim(ClaimTypes.Role, user.Data.Role));
+                    var token = GetToken(authClaims);
+                    return Ok(new
                     {
-                        LoginDTO loginDTO = new LoginDTO();
-                        {
-                            loginDTO.Username = user.Data.UserName;
-                            loginDTO.AgentId = user.Data.AgentId;
-                            loginDTO.UserId = user.Data.UserId;
-                            loginDTO.UserKey = UserKey.SecretKey;
-                        }
-                        return Ok(loginDTO);
-                    }
-                    else
-                    {
-                        return StatusCode(400, "Account Key is expired. Please check with administrator");
-                    }
+                        token = new JwtSecurityTokenHandler().WriteToken(token),
+                        expiration = token.ValidTo,
+                        userId = user.Data.UserId
+                    });
                 }
                 else
                 {
@@ -136,6 +140,20 @@ namespace TrawtelCRMAPI.Controllers
                 _logger.LogError($"Something went wrong inside CreateOwner action: {ex.Message}");
                 return StatusCode(500, ex.Message);
             }
+        }
+        private JwtSecurityToken GetToken(List<Claim> authClaims)
+        {
+            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["JWT:ValidIssuer"],
+                audience: _configuration["JWT:ValidAudience"],
+                expires: DateTime.Now.AddHours(3),
+                claims: authClaims,
+                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
+                );
+
+            return token;
         }
         [HttpPost]
         public IActionResult CreateUser([FromBody] User user)
@@ -158,20 +176,6 @@ namespace TrawtelCRMAPI.Controllers
                 user.UpdatedDate = DateTime.UtcNow;
                 var userEntity = _mapper.Map<User>(user);
                 _repository.User.CreateUser(userEntity);
-                _repository.Save();
-
-                UserKey userKey = new UserKey();
-                {
-                    userKey.UserKeyId = Guid.NewGuid();
-                    userKey.AgentId = user.AgentId;
-                    userKey.SecretKey = GenerateAPIKEY();
-                    userKey.IPAddress = "";
-                    userKey.Status = "0";
-                    userKey.CreatedDate = DateTime.Now;
-                    userKey.UpdatedDate = DateTime.Now;
-
-                }
-                _repository.UserKey.CreateUserKey(userKey);
                 _repository.Save();
                 return Ok("User created successfully");
             }

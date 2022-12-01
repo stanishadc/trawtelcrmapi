@@ -47,7 +47,7 @@ namespace Repository
             {
                 if (!string.IsNullOrEmpty(user.Status))
                 {
-                    if (Convert.ToInt32(user.Status) == (int)CommonEnums.UserStatus.Active)
+                    if (user.Status == CommonEnums.UserStatus.Active.ToString())
                     {
                         response.Succeeded = true;
                         response.Data = user;
