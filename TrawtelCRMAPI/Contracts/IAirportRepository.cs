@@ -11,5 +11,6 @@ namespace Contracts
     {
         public List<Airport> GetAirports();
         public List<Airport> SearchAirports(string searchkey);
+        public Location GetAirportByCode(string airportcode);
     }
 }

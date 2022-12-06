@@ -1,5 +1,7 @@
 ﻿using Amazon.S3;
+using Contracts;
 using Entities.Models;
+using TrawtelCRMAPI.Controllers;
 
 namespace TrawtelCRMAPI.Services
 {
@@ -25,9 +27,19 @@ namespace TrawtelCRMAPI.Services
                 flightRequestDTO.ErrorMessage = "Please enter the adults";
                 return flightRequestDTO;
             }
+            for (int i = 0; i < flightRequestDTO.flightJourneyRequest.Count; i++)
+            {
+                var Location = CheckLocation(flightRequestDTO.flightJourneyRequest[i].LocationFrom);
+            }
             flightRequestDTO.ErrorStatus = false;
             return flightRequestDTO;
         }
+
+        private object CheckLocation(Location? locationFrom)
+        {            
+            return null;
+        }
+
         public HotelRequestDTO ValidateHotelRequest(HotelRequestDTO hotelRequestDTO)
         {
             if (hotelRequestDTO == null)

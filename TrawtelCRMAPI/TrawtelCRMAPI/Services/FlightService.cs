@@ -165,16 +165,38 @@ namespace TrawtelCRMAPI.Services
                     {
                         flightRequest.TravelDate = commonFlightRequest.flightJourneyRequest[0].DepartureDate;
                     }
-                }
-                flightRequest.flightJourneyRequest = JsonConvert.SerializeObject(new { commonFlightRequest.flightJourneyRequest });
-                var apiresponse = _travelerService.ConvertTravelerToStringArray(commonFlightRequest.Passengers);
-                if (apiresponse.Succeeded)
-                {
-                    flightRequest.Passengers = JsonConvert.SerializeObject((string[]?)apiresponse.Data);
+                    for (int i = 0; i < commonFlightRequest.flightJourneyRequest.Count; i++)
+                    {
+                        var journeyFrom = _repository.Airport.GetAirportByCode(commonFlightRequest.flightJourneyRequest[i].LocationFrom.AirportCode);
+                        if(journeyFrom !=null)
+                        {
+                            commonFlightRequest.flightJourneyRequest[i].LocationFrom = journeyFrom;
+                        }
+                        var journeyTo = _repository.Airport.GetAirportByCode(commonFlightRequest.flightJourneyRequest[i].LocationTo.AirportCode);
+                        if (journeyTo != null)
+                        {
+                            commonFlightRequest.flightJourneyRequest[i].LocationTo = journeyTo;
+                        }
+                    }
                 }
                 else
                 {
-                    return apiresponse;
+                    _apiResponse.Succeeded = false;
+                    _apiResponse.Message = "Journey Details Missing. Please check";
+                }
+                
+                flightRequest.flightJourneyRequest = JsonConvert.SerializeObject(new { commonFlightRequest.flightJourneyRequest });
+                if (commonFlightRequest.Passengers.Count > 0)
+                {
+                    var apiresponse = _travelerService.ConvertTravelerToStringArray(commonFlightRequest.Passengers);
+                    if (apiresponse.Succeeded)
+                    {
+                        flightRequest.Passengers = JsonConvert.SerializeObject((string[]?)apiresponse.Data);
+                    }
+                    else
+                    {
+                        return apiresponse;
+                    }
                 }
                 if (QueryType == "Save")
                 {

@@ -127,7 +127,8 @@ namespace TrawtelCRMAPI.Controllers
                     {
                         token = new JwtSecurityTokenHandler().WriteToken(token),
                         expiration = token.ValidTo,
-                        userId = user.Data.UserId
+                        userId = user.Data.UserId,
+                        status = true
                     });
                 }
                 else
@@ -148,7 +149,7 @@ namespace TrawtelCRMAPI.Controllers
             var token = new JwtSecurityToken(
                 issuer: _configuration["JWT:ValidIssuer"],
                 audience: _configuration["JWT:ValidAudience"],
-                expires: DateTime.Now.AddHours(3),
+                expires: DateTime.Now.AddHours(72),
                 claims: authClaims,
                 signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
                 );

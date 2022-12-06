@@ -5,6 +5,7 @@ using Entities.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
+using TrawtelCRMAPI.ViewModel;
 
 namespace TrawtelCRMAPI.Controllers
 {
@@ -18,15 +19,16 @@ namespace TrawtelCRMAPI.Controllers
             _repository = repository;
         }
         [HttpGet("get")]
-        public Response<List<Airport>> GetAirports()
+        public Response<List<AutoComplete>> GetAirports()
         {
-            Response<List<Airport>> _apiResponse = new Response<List<Airport>>();
+            Response<List<AutoComplete>> _apiResponse = new Response<List<AutoComplete>>();
             try
             {
                 var response = _repository.Airport.GetAirports();
                 if (response.Count > 0)
                 {
-                    _apiResponse.Data = response;
+                    var airports = MapAirports(response);
+                    _apiResponse.Data = airports;
                     _apiResponse.Succeeded = true;
                 }
                 else
@@ -66,6 +68,18 @@ namespace TrawtelCRMAPI.Controllers
                 _apiResponse.Message = ex.ToString();
             }
             return _apiResponse;
+        }
+        private List<AutoComplete> MapAirports(List<Airport> airports)
+        {
+            List<AutoComplete> result = new List<AutoComplete>();
+            foreach (Airport airport in airports)
+            {
+                AutoComplete resultItem = new AutoComplete();
+                resultItem.id = airport.AirportCode;
+                resultItem.name = airport.AirportName + "," + airport.CityName + "(" + airport.AirportCode + ")";
+                result.Add(resultItem);
+            }
+            return result;
         }
     }
 }

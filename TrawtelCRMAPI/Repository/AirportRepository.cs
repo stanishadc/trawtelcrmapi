@@ -32,6 +32,30 @@ namespace Repository
                 throw new Exception(e.Message);
             }
         }
+        public Location GetAirportByCode(string airportcode)
+        {
+            try
+            {
+                var airports = BindAirportCSVData();
+                var airport= airports.Where(p => p.AirportCode.ToLower().Equals(airportcode.ToLower())).FirstOrDefault();
+                if (airport != null)
+                {
+                    Location location = new Location();
+                    {
+                        location.AirportCode = airport.AirportCode;
+                        location.AirportName = airport.AirportName;
+                        location.City = airport.CityName;
+                        location.Country = airport.CountryName;
+                        return location;
+                    }
+                }
+                return null;
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
         private List<Airport> BindAirportCSVData()
         {
             try

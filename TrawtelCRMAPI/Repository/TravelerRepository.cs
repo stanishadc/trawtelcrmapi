@@ -50,7 +50,7 @@ namespace Repository
         }
         public Guid CheckTravelerExists(Traveler traveler)
         {
-            var traveller = FindByCondition(client => client.FirstName.Equals(traveler.FirstName) && client.LastName.Equals(traveler.LastName) && client.DateOfBirth.Equals(traveler.DateOfBirth))
+            var traveller = FindByCondition(client => client.FirstName.Equals(traveler.FirstName) && client.LastName.Equals(traveler.LastName) && client.Email.Equals(traveler.Email))
                 .FirstOrDefault();
             if (traveller == null)
             {
